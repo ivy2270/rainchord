@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雨歌作品集</title>
+	<link rel="icon" type="image/png" href="https://rainchord.com/wp-content/uploads/2019/06/favicon-o.png">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+<style>
+    /* ================================================= */
+    /* CSS 樣式：春日嫩芽清新可愛風 (按鈕優化版) */
+    /* ================================================= */
+
+    /* 引入自定義字體 */
+    @font-face {
+        font-family: 'JFOpenHuninn';
+        src: url('https://ymdd-image-tw.s3.ap-east-2.amazonaws.com/font/jf-openhuninn-2.1.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    :root {
+        --primary-color: #1abc9c; /* 主色調：薄荷綠/湖水綠 (清新) */
+        --secondary-color: #FFECB3; /* ⭐️ 春日嫩芽黃：極淺香草奶油黃 */
+        --secondary-color-darker: #FFD54F; /* 輔助色：用於 hover 效果和邊框 */
+        --bg-color: #ffffff; /* 純白背景 */
+        --card-bg: #ffffff;
+        --text-color: #4a6572; /* 柔和的深藍色文字 (按鈕文字色) */
+        --shadow: 0 10px 30px rgba(26, 188, 156, 0.15); /* 帶有主色調的輕柔陰影 */
+        --border-radius: 25px; /* 極大圓角 */
+    }
+
+    body {
+        /* 採用 JFOpenHuninn 字體 */
+        font-family: 'JFOpenHuninn', '微軟正黑體', 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        color: var(--text-color);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--bg-color);
+        background-image: none; 
+        background-attachment: fixed;
+    }
+
+    body::after { content: none; } 
+
+    .container {
+        max-width: 1100px;
+        width: 90%;
+        margin: 0 auto;
+        padding: 30px 0;
+        flex-grow: 1;
+    }
+
+    /* 標題與導覽列 */
+    header {
+        background-color: var(--bg-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        padding: 15px 0;
+    }
+
+    h1 {
+        color: var(--primary-color);
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 25px;
+        padding-top: 15px;
+        font-size: 2.6rem;
+        font-weight: 700;
+    }
+
+    /* 分類按鈕區 */
+    .category-nav {
+        display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;
+        margin-bottom: 40px; padding: 0 10px;
+    }
+
+    .category-btn {
+        background: #ecf0f1; 
+        color: var(--text-color);
+        border: none;
+        padding: 10px 22px;
+        border-radius: 30px; 
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 600;
+    }
+
+    .category-btn:hover {
+        background-color: var(--secondary-color);
+        color: var(--text-color); 
+        transform: scale(1.05); 
+    }
+
+    .category-btn.active {
+        background-color: var(--primary-color);
+        color: white;
+        box-shadow: 0 4px 10px rgba(26, 188, 156, 0.5);
+    }
+    
+    /* 作品卡片區 */
+    #projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 30px; 
+    }
+
+    .project-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius); 
+        padding: 30px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease; 
+        display: flex; flex-direction: column; justify-content: space-between;
+        min-height: 180px;
+        position: relative; 
+    }
+
+    .project-card:hover {
+        transform: translateY(-10px); 
+        box-shadow: var(--shadow); 
+    }
+
+    .project-card h3 {
+        color: var(--primary-color);
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 1.4rem;
+    }
+
+    .project-card p {
+        font-size: 1rem;
+        color: #7f8c8d;
+        margin: 0;
+    }
+
+    /* ------------------------------------------------ */
+    /* 彈出視窗 (Modal) 區域 */
+    /* ------------------------------------------------ */
+    .modal {
+        position: fixed;
+        z-index: 200;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4); 
+        display: none; 
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal.open {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-content {
+        background-color: var(--card-bg);
+        margin: 10% auto;
+        padding: 35px;
+        border-radius: var(--border-radius); 
+        width: 90%;
+        max-width: 650px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        position: relative;
+    }
+
+    @keyframes slideIn {
+        from { transform: translateY(-30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .modal.open .modal-content {
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    .close-btn { 
+        color: #aaa; float: right; font-size: 30px; font-weight: bold; cursor: pointer; 
+        line-height: 1;
+    }
+    .close-btn:hover, .close-btn:focus { color: var(--primary-color); }
+
+    .modal-body h2 { 
+        color: var(--primary-color); margin-top: 0; margin-bottom: 15px; font-size: 2rem; 
+    }
+    .modal-body p { 
+        color: var(--text-color); line-height: 1.6; font-size: 1.05rem; margin-bottom: 25px; white-space: pre-wrap;
+    }
+
+    .link-container {
+        display: flex; flex-wrap: wrap; gap: 15px; border-top: 1px solid #f0f0f0; 
+        padding-top: 20px;
+    }
+
+    .link-container a {
+        /* ⭐️ 核心修正：增加邊框和陰影，提升層次感 */
+        background-color: var(--secondary-color);
+        color: var(--text-color); 
+        padding: 12px 22px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: all 0.1s ease; /* 調整 transition 為更快速的點擊效果 */
+        display: inline-flex; align-items: center;
+        
+        /* 新增：細邊框增加區分度 */
+        border: 2px solid var(--secondary-color-darker); 
+        /* 新增：輕微陰影讓按鈕浮起 */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+    }
+    .link-container a i { margin-right: 8px; font-size: 1.1em; }
+    
+    .link-container a:hover {
+        /* 模擬按鈕被按下的效果 */
+        background-color: var(--secondary-color-darker); 
+        transform: translateY(1px); /* 輕微下沉 */
+        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1); /* 陰影縮小 */
+    }
+
+    .link-container a:active {
+        /* 按下瞬間的效果 */
+        transform: translateY(2px);
+        box-shadow: none;
+    }
+    
+    /* 載入/錯誤訊息 */
+    #status-message {
+        text-align: center; padding: 50px; font-size: 1.2rem; color: #666;
+        background: white; border: 1px solid #eee; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-radius: 10px; margin: 50px auto;
+    }
+    
+    /* 響應式調整 */
+    @media (max-width: 768px) {
+        h1 { font-size: 2rem; }
+        .modal-content { 
+            margin: 5% auto; max-width: 95%; padding: 25px;
+        }
+        .modal-body h2 { font-size: 1.8rem; }
+    }
+
+</style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <h1 id="page-title">雨歌作品集</h1>
+            <div id="category-nav" class="category-nav">
+                </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="status-message">載入中，請稍候...</div>
+        <div id="projects-grid">
+            </div>
+    </div>
+
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div class="modal-body">
+                <h2 id="modal-title"></h2>
+                <p id="modal-description"></p>
+                <div id="modal-links" class="link-container">
+                    </div>
+            </div>
+        </div>
+    </div>
+	<p style="text-align:center">Made in Love by Ivy</p>
+
+    <script>
+// =================================================
+// JavaScript 邏輯：抓取資料、渲染與互動 (已修改：支援多重 Category)
+// =================================================
+
+// ** ！！請將此處替換為您部署成功的 GAS Web App URL！！ **
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxy22LVRCpYpjfhGdphh_p8Ivdtys_GXQhXz_ZWIrmXzXgAZTyhiILr4mbHVSP4uJx3Dg/exec'; 
+// ----------------------------------------------------
+
+const projectsGrid = document.getElementById('projects-grid');
+const categoryNav = document.getElementById('category-nav');
+const statusMessage = document.getElementById('status-message');
+const modal = document.getElementById('projectModal');
+const closeBtn = document.querySelector('.close-btn');
+
+let allProjects = [];
+let currentCategory = 'All';
+
+// 監聽 Modal 關閉事件
+closeBtn.onclick = () => {
+    modal.classList.remove('open');
+};
+window.onclick = (event) => {
+    if (event.target == modal) {
+        modal.classList.remove('open');
+    }
+};
+
+
+/**
+ * 1. 抓取 Google Apps Script 提供的 JSON 資料
+ */
+async function fetchProjects() {
+    statusMessage.style.display = 'block';
+    statusMessage.textContent = '載入中，請稍候...';
+    
+    try {
+        const response = await fetch(GAS_API_URL);
+        if (!response.ok) {
+            throw new Error(`HTTP 錯誤! 狀態碼: ${response.status}`);
+        }
+        const result = await response.json();
+        
+        if (!result.data || !Array.isArray(result.data)) {
+             throw new Error('API 回傳的資料結構不正確，請檢查 Apps Script。');
+        }
+        
+        allProjects = result.data.filter(p => p.Title && p.Category);
+        
+        if (allProjects.length === 0) {
+            statusMessage.textContent = '目前沒有任何作品資料。';
+            return;
+        }
+
+        statusMessage.style.display = 'none';
+        renderCategories(allProjects);
+        filterAndRenderProjects(currentCategory);
+
+    } catch (error) {
+        console.error('抓取資料失敗:', error);
+        statusMessage.textContent = `載入失敗：${error.message}。請檢查 GAS 網址是否正確部署且權限為「任何人」。`;
+    }
+}
+
+
+/**
+ * 2. 渲染分類按鈕 (支援多個分類)
+ * @param {Array<Object>} projects - 所有作品資料
+ */
+function renderCategories(projects) {
+    const categories = new Set(['All']); // 預設包含 'All'
+    
+    projects.forEach(p => {
+        if (p.Category) {
+            // ⭐️ 核心修改 A: 使用逗號分隔，並將所有分類加入 Set
+            p.Category.toString().split(',').forEach(cat => {
+                categories.add(cat.trim());
+            });
+        }
+    });
+
+    categoryNav.innerHTML = '';
+    
+    categories.forEach(category => {
+        const trimmedCat = category.trim();
+        if (!trimmedCat) return; // 避免空分類
+
+        const btn = document.createElement('button');
+        btn.className = 'category-btn';
+        btn.textContent = trimmedCat;
+        btn.dataset.category = trimmedCat;
+        
+        // 標記預設選中的分類
+        if (trimmedCat === currentCategory) {
+            btn.classList.add('active');
+        }
+
+        btn.addEventListener('click', () => {
+            // 移除所有按鈕的 active 狀態
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            // 設定目前選中的分類
+            btn.classList.add('active');
+            currentCategory = trimmedCat;
+            filterAndRenderProjects(trimmedCat);
+        });
+        categoryNav.appendChild(btn);
+    });
+}
+
+
+/**
+ * 3. 根據分類過濾並渲染作品卡片 (支援多個分類)
+ * @param {string} category - 要過濾的分類名稱 ('All' 表示不過濾)
+ */
+function filterAndRenderProjects(category) {
+    const filteredProjects = allProjects.filter(p => {
+        if (category === 'All') return true;
+        
+        if (!p.Category) return false;
+
+        // ⭐️ 核心修改 B: 檢查該作品的 Category 欄位是否包含當前選中的分類
+        const projectCategories = p.Category.toString().split(',').map(c => c.trim());
+        return projectCategories.includes(category);
+    });
+
+    projectsGrid.innerHTML = ''; // 清空現有內容
+
+    if (filteredProjects.length === 0) {
+         projectsGrid.innerHTML = `<div style="text-align: center; grid-column: 1 / -1; padding: 50px;">此分類下目前沒有作品。</div>`;
+         return;
+    }
+
+    filteredProjects.forEach(project => {
+        const card = document.createElement('div');
+        card.className = 'project-card';
+        card.setAttribute('onclick', `showProjectModal(${JSON.stringify(project).replace(/'/g, "\\'")})`);
+
+        // 顯示作品名稱和簡短說明
+        card.innerHTML = `
+            <h3><i class="ri-rocket-line"></i> ${project.Title}</h3>
+            <p>${project.Description ? project.Description.substring(0, 80) + (project.Description.length > 80 ? '...' : '') : '無說明'}</p>
+        `;
+        projectsGrid.appendChild(card);
+    });
+}
+
+
+/**
+ * 4. 顯示作品詳細資訊的 Modal (此函式無需修改)
+ * @param {Object} project - 單個作品的資料物件
+ */
+function showProjectModal(project) {
+    document.getElementById('modal-title').textContent = project.Title;
+    document.getElementById('modal-description').textContent = project.Description || '無詳細說明。';
+    
+    const linksContainer = document.getElementById('modal-links');
+    linksContainer.innerHTML = ''; // 清空舊連結
+
+    const linkIconMap = {
+        'demo': 'ri-eye-line',
+        'github': 'ri-github-fill',
+        '文件': 'ri-file-text-line',
+        '連結': 'ri-links-line'
+    };
+
+    // 尋找所有 Link 屬性，並將其製作成按鈕
+    for (let i = 1; i <= 5; i++) { // 假設最多支援 Link1 到 Link5
+        const url = project[`Link${i}`];
+        const text = project[`Link${i}_Text`];
+
+        if (url && text) {
+            const iconClass = Object.keys(linkIconMap).find(key => text.toLowerCase().includes(key)) 
+                            || linkIconMap['連結']; // 預設圖標
+
+            const linkBtn = document.createElement('a');
+            linkBtn.href = url;
+            linkBtn.target = '_blank'; // 開啟新分頁
+            linkBtn.innerHTML = `<i class="${iconClass}"></i> ${text}`;
+            
+            linksContainer.appendChild(linkBtn);
+        }
+    }
+
+    // 如果沒有連結，顯示提示
+    if (linksContainer.children.length === 0) {
+         linksContainer.innerHTML = `<p style="color: #999;">此作品目前沒有可用的連結。</p>`;
+    }
+
+    // 顯示 Modal
+    modal.classList.add('open');
+}
+
+// 頁面載入完成後，開始抓取資料
+document.addEventListener('DOMContentLoaded', fetchProjects);
+
+    </script>
+</body>
+</html>
