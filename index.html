@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
 <style>
     /* ================================================= */
-    /* CSS 樣式：春日嫩芽清新可愛風 (按鈕優化版) */
+    /* CSS 樣式：春日嫩芽清新可愛風 (最終 JS 輔助優化版) */
     /* ================================================= */
 
     /* 引入自定義字體 */
@@ -22,16 +22,15 @@
     :root {
         --primary-color: #1abc9c; /* 主色調：薄荷綠/湖水綠 (清新) */
         --secondary-color: #FFECB3; /* ⭐️ 春日嫩芽黃：極淺香草奶油黃 */
-        --secondary-color-darker: #FFD54F; /* 輔助色：用於 hover 效果和邊框 */
-        --bg-color: #ffffff; /* 純白背景 */
+        --secondary-color-darker: #FFD54F; /* 輔助色：用於 hover 效果和按鈕邊框 */
+        --bg-color: #ffffff;
         --card-bg: #ffffff;
         --text-color: #4a6572; /* 柔和的深藍色文字 (按鈕文字色) */
-        --shadow: 0 10px 30px rgba(26, 188, 156, 0.15); /* 帶有主色調的輕柔陰影 */
-        --border-radius: 25px; /* 極大圓角 */
+        --shadow: 0 10px 30px rgba(26, 188, 156, 0.15); 
+        --border-radius: 25px; 
     }
 
     body {
-        /* 採用 JFOpenHuninn 字體 */
         font-family: 'JFOpenHuninn', '微軟正黑體', 'Arial', sans-serif;
         margin: 0;
         padding: 0;
@@ -39,45 +38,65 @@
         min-height: 100vh;
         display: flex;
         flex-direction: column;
-        background-color: var(--bg-color);
-        background-image: none; 
-        background-attachment: fixed;
+        background-color: #f0f8f7; 
+        background-image: url('https://rainchord.s3.ap-east-2.amazonaws.com/bg-s.png'); 
+        background-size: cover; 
+        background-position: center; 
+        background-attachment: fixed; 
+        position: relative; 
     }
 
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.7); 
+        z-index: -1; 
+    }
+    
     body::after { content: none; } 
 
     .container {
         max-width: 1100px;
         width: 90%;
         margin: 0 auto;
-        padding: 30px 0;
+        padding: 15px 0;
         flex-grow: 1;
     }
 
     /* 標題與導覽列 */
     header {
-        background-color: var(--bg-color);
+        background-color: rgba(255, 255, 255, 0.9); 
+        backdrop-filter: blur(5px); 
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         position: sticky;
         top: 0;
         z-index: 100;
-        padding: 15px 0;
+        padding: 5px 0 10px 0; 
     }
 
     h1 {
         color: var(--primary-color);
         text-align: center;
         margin-top: 0;
-        margin-bottom: 25px;
-        padding-top: 15px;
+        margin-bottom: 15px; 
+        padding-top: 10px;
         font-size: 2.6rem;
         font-weight: 700;
     }
 
-    /* 分類按鈕區 */
+    /* 分類按鈕區 - 預設是置中+換行 (RWD 啟用前) */
     .category-nav {
-        display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;
-        margin-bottom: 40px; padding: 0 10px;
+        display: flex; 
+        justify-content: center; 
+        flex-wrap: wrap; 
+        gap: 10px;
+        margin-bottom: 15px; 
+        padding: 0 10px;
+        /* 確保元素可以被 JS 監控，在 768px 以上時是置中 */
     }
 
     .category-btn {
@@ -89,8 +108,36 @@
         cursor: pointer;
         transition: all 0.2s ease;
         font-weight: 600;
+        flex-shrink: 0; /* 確保按鈕在滑動模式下不被擠壓 */
     }
 
+    /* ------------------------------------------- */
+    /* ⭐️ 關鍵 JS 輔助 CSS：溢出時的樣式切換 */
+    /* ------------------------------------------- */
+    @media (max-width: 768px) {
+        .category-nav.is-scrollable {
+            justify-content: flex-start; /* ⭐️ 切換為靠左 */
+            flex-wrap: nowrap; /* ⭐️ 切換為不換行 */
+            overflow-x: auto; /* ⭐️ 啟用左右滑動 */
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 5px; 
+        }
+        .category-nav.is-scrollable::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 預設模式（未溢出，無 is-scrollable class）在手機上 */
+        .category-nav:not(.is-scrollable) {
+            justify-content: center; /* 保持置中 */
+            flex-wrap: wrap; /* 允許換行 */
+            overflow-x: hidden; /* 隱藏滾動條 */
+        }
+    }
+    
+    /* ------------------- (其餘 CSS 保持不變，略過) ------------------- */
+    
     .category-btn:hover {
         background-color: var(--secondary-color);
         color: var(--text-color); 
@@ -103,7 +150,6 @@
         box-shadow: 0 4px 10px rgba(26, 188, 156, 0.5);
     }
     
-    /* 作品卡片區 */
     #projects-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -140,9 +186,7 @@
         margin: 0;
     }
 
-    /* ------------------------------------------------ */
     /* 彈出視窗 (Modal) 區域 */
-    /* ------------------------------------------------ */
     .modal {
         position: fixed;
         z-index: 200;
@@ -202,32 +246,27 @@
     }
 
     .link-container a {
-        /* ⭐️ 核心修正：增加邊框和陰影，提升層次感 */
         background-color: var(--secondary-color);
         color: var(--text-color); 
         padding: 12px 22px;
         border-radius: 10px;
         text-decoration: none;
         font-weight: bold;
-        transition: all 0.1s ease; /* 調整 transition 為更快速的點擊效果 */
+        transition: all 0.1s ease; 
         display: inline-flex; align-items: center;
         
-        /* 新增：細邊框增加區分度 */
         border: 2px solid var(--secondary-color-darker); 
-        /* 新增：輕微陰影讓按鈕浮起 */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
     }
     .link-container a i { margin-right: 8px; font-size: 1.1em; }
     
     .link-container a:hover {
-        /* 模擬按鈕被按下的效果 */
         background-color: var(--secondary-color-darker); 
-        transform: translateY(1px); /* 輕微下沉 */
-        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1); /* 陰影縮小 */
+        transform: translateY(1px); 
+        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1); 
     }
 
     .link-container a:active {
-        /* 按下瞬間的效果 */
         transform: translateY(2px);
         box-shadow: none;
     }
@@ -247,7 +286,6 @@
         }
         .modal-body h2 { font-size: 1.8rem; }
     }
-
 </style>
 </head>
 <body>
@@ -279,9 +317,9 @@
     </div>
 	<p style="text-align:center">Made in Love by Ivy</p>
 
-    <script>
+<script>
 // =================================================
-// JavaScript 邏輯：抓取資料、渲染與互動 (已修改：支援多重 Category)
+// JavaScript 邏輯：抓取資料、渲染與互動 (已修正執行時序)
 // =================================================
 
 // ** ！！請將此處替換為您部署成功的 GAS Web App URL！！ **
@@ -337,6 +375,9 @@ async function fetchProjects() {
         renderCategories(allProjects);
         filterAndRenderProjects(currentCategory);
 
+        // ⭐️ 修正 1：在所有內容都渲染完成後，執行一次溢出檢查
+        checkOverflowAndAdjust(); 
+
     } catch (error) {
         console.error('抓取資料失敗:', error);
         statusMessage.textContent = `載入失敗：${error.message}。請檢查 GAS 網址是否正確部署且權限為「任何人」。`;
@@ -346,6 +387,7 @@ async function fetchProjects() {
 
 /**
  * 2. 渲染分類按鈕 (支援多個分類)
+ * 此函式本身不需要改變，但它會在 fetchProjects 結束後被呼叫
  * @param {Array<Object>} projects - 所有作品資料
  */
 function renderCategories(projects) {
@@ -407,13 +449,14 @@ function filterAndRenderProjects(category) {
     projectsGrid.innerHTML = ''; // 清空現有內容
 
     if (filteredProjects.length === 0) {
-         projectsGrid.innerHTML = `<div style="text-align: center; grid-column: 1 / -1; padding: 50px;">此分類下目前沒有作品。</div>`;
-         return;
+           projectsGrid.innerHTML = `<div style="text-align: center; grid-column: 1 / -1; padding: 50px;">此分類下目前沒有作品。</div>`;
+           return;
     }
 
     filteredProjects.forEach(project => {
         const card = document.createElement('div');
         card.className = 'project-card';
+        // 使用 JSON.stringify 和 replace 來安全地傳遞物件資料
         card.setAttribute('onclick', `showProjectModal(${JSON.stringify(project).replace(/'/g, "\\'")})`);
 
         // 顯示作品名稱和簡短說明
@@ -464,7 +507,7 @@ function showProjectModal(project) {
 
     // 如果沒有連結，顯示提示
     if (linksContainer.children.length === 0) {
-         linksContainer.innerHTML = `<p style="color: #999;">此作品目前沒有可用的連結。</p>`;
+           linksContainer.innerHTML = `<p style="color: #999;">此作品目前沒有可用的連結。</p>`;
     }
 
     // 顯示 Modal
@@ -474,6 +517,59 @@ function showProjectModal(project) {
 // 頁面載入完成後，開始抓取資料
 document.addEventListener('DOMContentLoaded', fetchProjects);
 
-    </script>
+
+/**
+ * 5. 檢查分類按鈕是否溢出，並切換滑動模式 (功能不變，只需確保呼叫時機)
+ */
+function checkOverflowAndAdjust() {
+    const navContainer = document.querySelector('.category-nav');
+    if (!navContainer) return;
+
+    // 2. 只有在小螢幕 (768px 以下) 才需要切換模式
+    if (window.innerWidth <= 768) {
+        
+        // 為了準確計算所有按鈕佔據的總寬度，我們需要一個臨時容器
+        // 暫時強制不換行，以便測量總寬度
+        navContainer.style.flexWrap = 'nowrap'; 
+        // navContainer.style.width = 'fit-content'; // 移除此行，避免影響 clientWidth 測量
+        
+        // 測量按鈕總寬度 (ScrollWidth) 與容器可視寬度 (ClientWidth)
+        const contentWidth = navContainer.scrollWidth;
+        const containerWidth = navContainer.clientWidth;
+
+        // 恢復 flex-wrap 屬性
+        navContainer.style.flexWrap = '';
+        // navContainer.style.width = '';
+
+        // 3. 判斷是否溢出 (總寬度 > 可視寬度)
+        if (contentWidth > containerWidth) {
+            // 溢出：需要滑動
+            navContainer.classList.add('is-scrollable');
+        } else {
+            // 未溢出：保持置中
+            navContainer.classList.remove('is-scrollable');
+        }
+        
+    } else {
+        // 在大螢幕上 (768px 以上)，我們確保沒有滾動類，保持預設置中換行
+        navContainer.classList.remove('is-scrollable');
+    }
+}
+
+// ⭐️ 修正 2：視窗大小改變時，還是需要執行溢出檢查
+window.addEventListener('resize', debounce(checkOverflowAndAdjust, 100));
+
+// 為了避免重複執行導致性能下降，引入 debounce 函式 (防抖)
+function debounce(func, delay) {
+    let timeout;
+    return function() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), delay);
+    };
+}
+    
+</script>
 </body>
 </html>
