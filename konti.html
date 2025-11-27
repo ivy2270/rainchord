@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">動態載入中...</title>
+    <link rel="icon" type="image/png" id="favicon-link">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+<style>
+    /* ================================================= */
+    /* CSS 樣式：診所自費表 (動態載入版) */
+    /* ================================================= */
+
+    /* 引入自定義字體 */
+    @font-face {
+        font-family: 'JFOpenHuninn';
+        src: url('https://ymdd-image-tw.s3.ap-east-2.amazonaws.com/font/jf-openhuninn-2.1.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    /* 初始預設值，會被 JS 覆寫 */
+    :root {
+        --primary-color: #1abc9c; /* 主色調：會被 Sheet 覆寫 */
+        --secondary-color: #FFECB3; /* 輔助色：會被 Sheet 覆寫 */
+        --text-color: #4a6572; 
+        --card-bg: #ffffff;
+        --border-radius: 25px; 
+    }
+
+    body {
+        font-family: 'JFOpenHuninn', '微軟正黑體', 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        color: var(--text-color);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background-color: #f0f8f7; 
+        /* ⭐️ 背景圖透過 JS 動態設定，這裡只保留預設樣式 */
+        background-size: cover; 
+        background-position: center; 
+        background-attachment: fixed; 
+        position: relative; 
+    }
+
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.7); 
+        z-index: -1; 
+    }
+    
+    .container {
+        max-width: 1100px;
+        width: 90%;
+        margin: 0 auto;
+        padding: 15px 0;
+        flex-grow: 1;
+    }
+
+    /* 標題與導覽列 */
+    header {
+        background-color: rgba(255, 255, 255, 0.9); 
+        backdrop-filter: blur(5px); 
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        padding: 5px 0 10px 0; 
+    }
+
+    h1 {
+        color: var(--primary-color);
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 15px; 
+        padding-top: 10px;
+        font-size: 2.6rem;
+        font-weight: 700;
+    }
+
+    /* 分類按鈕區 */
+    .category-nav {
+        display: flex; 
+        justify-content: center; 
+        flex-wrap: wrap; 
+        gap: 10px;
+        margin-bottom: 15px; 
+        padding: 0 10px;
+    }
+
+    .category-btn {
+        background: #ecf0f1; 
+        color: var(--text-color);
+        border: none;
+        padding: 10px 22px;
+        border-radius: 30px; 
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    /* 關鍵 JS 輔助 CSS：溢出時的樣式切換 */
+    @media (max-width: 768px) {
+        .category-nav.is-scrollable {
+            justify-content: flex-start;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 5px; 
+        }
+        .category-nav.is-scrollable::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-nav:not(.is-scrollable) {
+            justify-content: center;
+            flex-wrap: wrap;
+            overflow-x: hidden;
+        }
+    }
+    
+    /* 按鈕 Hover 與 Active 狀態 */
+    .category-btn:hover {
+        background-color: var(--secondary-color);
+        color: var(--text-color); 
+        transform: scale(1.05); 
+    }
+
+    .category-btn.active {
+        background-color: var(--primary-color);
+        color: white;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* 這裡使用通用的陰影 */
+    }
+    
+    /* 服務卡片網格 */
+    #projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 30px; 
+    }
+
+    /* 服務卡片樣式 */
+    .project-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius); 
+        padding: 30px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: space-between;
+        min-height: 150px; /* ⭐️ 調整為更緊湊的 150px */
+        position: relative; 
+        border-top: 5px solid var(--primary-color); /* 增加主色調裝飾線 */
+    }
+
+    .project-card:hover {
+        transform: translateY(-5px); /* 輕微上浮 */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* 使用通用的深色陰影 */
+    }
+
+    .project-card h3 {
+        color: var(--primary-color);
+        margin-top: 0;
+        margin-bottom: 8px; /* ⭐️ 調整為更緊湊的 8px */
+        font-size: 1.4rem;
+        font-weight: 700;
+    }
+    
+    /* 價格樣式 */
+    .project-card .price {
+        color: #ff6f61; /* 顯眼的紅色，突出價格 */
+        font-size: 1.15rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px dashed #eee;
+    }
+
+    .project-card p {
+        font-size: 1rem;
+        color: #7f8c8d;
+        margin: 0;
+    }
+    
+    /* 彈出視窗 (Modal) 區域 */
+    .modal {
+        position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%;
+        overflow: auto; background-color: rgba(0, 0, 0, 0.6); 
+        display: none; align-items: center; justify-content: center;
+        opacity: 0; transition: opacity 0.3s ease;
+    }
+
+    .modal.open { display: flex; opacity: 1; }
+
+    .modal-content {
+        background-color: var(--card-bg);
+        margin: 5% auto;
+        padding: 35px;
+        border-radius: var(--border-radius); 
+        width: 90%;
+        max-width: 700px; /* 稍微寬一點以容納圖片 */
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        position: relative;
+    }
+
+    /* Modal 圖片容器 */
+    .modal-image-container {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+    
+    .modal-image-container img {
+        width: 150px; /* 縮圖尺寸 */
+        height: 100px;
+        object-fit: cover;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: transform 0.2s, opacity 0.2s;
+        border: 2px solid var(--secondary-color);
+        flex-shrink: 0;
+    }
+    
+    .modal-image-container img:hover {
+        transform: scale(1.05);
+        opacity: 0.9;
+    }
+    
+    /* Lightbox (圖片放大視窗) 樣式 */
+    #lightbox-modal {
+        position: fixed;
+        z-index: 300; /* 比普通 modal 更高 */
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    #lightbox-modal.open {
+        display: flex;
+        opacity: 1;
+    }
+
+    #lightbox-content {
+        max-width: 95%;
+        max-height: 95%;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+    
+    #lightbox-close {
+        position: absolute;
+        top: 20px;
+        right: 35px;
+        color: #fff;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    
+    #lightbox-close:hover {
+        color: var(--primary-color);
+    }
+
+    /* (其餘樣式保持不變，或進行小調整以適應新的顏色變數) */
+
+    @keyframes slideIn {
+        from { transform: translateY(-30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .modal.open .modal-content {
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    .close-btn { 
+        color: #aaa; float: right; font-size: 30px; font-weight: bold; cursor: pointer; 
+        line-height: 1;
+    }
+    .close-btn:hover, .close-btn:focus { color: var(--primary-color); }
+
+    .modal-body h2 { 
+        color: var(--primary-color); margin-top: 0; margin-bottom: 10px; font-size: 2rem; 
+    }
+    .modal-body .modal-price {
+        color: #ff6f61; /* 顯眼的紅色，與卡片一致 */
+        font-size: 1.3rem;
+        font-weight: 800;
+        margin-bottom: 15px;
+    }
+    .modal-body p { 
+        color: var(--text-color); line-height: 1.6; font-size: 1.05rem; margin-bottom: 25px; white-space: pre-wrap;
+    }
+
+    /* 移除 .link-container 相關樣式，因為不再需要連結按鈕 */
+
+    /* 響應式調整 */
+    @media (max-width: 768px) {
+        h1 { font-size: 2rem; }
+        .modal-content { 
+            margin: 5% auto; max-width: 95%; padding: 25px;
+        }
+        .modal-body h2 { font-size: 1.8rem; }
+    }
+</style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <h1 id="header-title"></h1>
+            <div id="category-nav" class="category-nav">
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="status-message">載入中，請稍候...</div>
+        <div id="projects-grid">
+        </div>
+    </div>
+
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div class="modal-body">
+                <h2 id="modal-title"></h2>
+                <div id="modal-price" class="modal-price"></div>
+                <div id="modal-images" class="modal-image-container"></div>
+                <p id="modal-description"></p>
+                </div>
+        </div>
+    </div>
+    
+    <div id="lightbox-modal" class="modal">
+        <span id="lightbox-close">&times;</span>
+        <img id="lightbox-content">
+    </div>
+
+    <p style="text-align:center; padding-top: 20px; font-size: 0.8rem; color: #aaa;">Powered by Google Sheets</p>
+
+    </body>
+	<script>
+// =================================================
+// JavaScript 邏輯：整合 Settings, Services 與 Lightbox
+// =================================================
+
+// ** ！！請將此處替換為您部署成功的 GAS Web App URL！！ **
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxa_ENMpt3jOfFJ1SCiAbFrcp0_F7hiC398W9ow7Q5bb6MEpeUWbNAjssj9zd5t4X96Aw/exec'; 
+// ----------------------------------------------------
+
+const projectsGrid = document.getElementById('projects-grid');
+const categoryNav = document.getElementById('category-nav');
+const statusMessage = document.getElementById('status-message');
+const modal = document.getElementById('projectModal');
+const closeBtn = document.querySelector('.close-btn');
+const headerTitle = document.getElementById('header-title');
+
+// Lightbox 元素
+const lightboxModal = document.getElementById('lightbox-modal');
+const lightboxContent = document.getElementById('lightbox-content');
+const lightboxClose = document.getElementById('lightbox-close');
+
+let allProjects = [];
+let currentCategory = 'All';
+
+
+/**
+ * 輔助函式：套用全域設定 (從 GAS 的 Settings Sheet 抓取)
+ * @param {Object} settings - 來自 Sheets 的設定物件
+ */
+function applySettings(settings) {
+    if (!settings) return;
+
+    const root = document.documentElement;
+
+    // 1. 設定顏色變數
+    if (settings.PRIMARY_COLOR) {
+        root.style.setProperty('--primary-color', settings.PRIMARY_COLOR);
+    }
+    if (settings.SECONDARY_COLOR) {
+        root.style.setProperty('--secondary-color', settings.SECONDARY_COLOR);
+    }
+
+    // 2. 設定網站標題
+    if (settings.PAGE_TITLE) {
+        document.title = settings.PAGE_TITLE;
+        headerTitle.textContent = settings.PAGE_TITLE;
+    }
+
+    // 3. 設定 Favicon
+    const faviconLink = document.getElementById('favicon-link');
+    if (settings.FAVICON_URL) {
+        faviconLink.href = settings.FAVICON_URL;
+    } else {
+        // 如果沒有設定，移除或使用預設
+        faviconLink.removeAttribute('href');
+    }
+
+    // 4. 設定背景圖片
+    if (settings.BACKGROUND_IMAGE_URL) {
+        document.body.style.backgroundImage = `url('${settings.BACKGROUND_IMAGE_URL}')`;
+    }
+}
+
+
+/**
+ * 1. 抓取 Google Apps Script 提供的 JSON 資料
+ */
+async function fetchProjects() {
+    statusMessage.style.display = 'block';
+    statusMessage.textContent = '載入中，請稍候...';
+    
+    try {
+        const response = await fetch(GAS_API_URL);
+        if (!response.ok) {
+            throw new Error(`HTTP 錯誤! 狀態碼: ${response.status}`);
+        }
+        const result = await response.json();
+        
+        if (!result.services || !Array.isArray(result.services)) {
+             throw new Error('API 回傳的資料結構不正確，請檢查 Apps Script 及 Services 分頁。');
+        }
+
+        // ⭐️ 核心：套用全域設定 (顏色、標題、背景圖等)
+        applySettings(result.settings);
+        
+        allProjects = result.services.filter(p => p.Title && p.Category);
+        
+        if (allProjects.length === 0) {
+            statusMessage.textContent = '目前沒有任何服務項目資料。';
+            return;
+        }
+
+        statusMessage.style.display = 'none';
+        
+        renderCategories(allProjects);
+        filterAndRenderProjects(currentCategory);
+
+        // 確保在所有按鈕渲染完成後，執行一次溢出檢查
+        checkOverflowAndAdjust(); 
+
+    } catch (error) {
+        console.error('抓取資料失敗:', error);
+        statusMessage.textContent = `載入失敗：${error.message}。請檢查 GAS 網址是否正確部署且權限為「任何人」。`;
+    }
+}
+
+
+/**
+ * 2. 渲染分類按鈕
+ * @param {Array<Object>} projects - 所有服務資料
+ */
+function renderCategories(projects) {
+    const categories = new Set(['All']); // 預設包含 'All'
+    
+    projects.forEach(p => {
+        if (p.Category) {
+            p.Category.toString().split(',').forEach(cat => {
+                categories.add(cat.trim());
+            });
+        }
+    });
+
+    categoryNav.innerHTML = '';
+    
+    categories.forEach(category => {
+        const trimmedCat = category.trim();
+        if (!trimmedCat) return;
+
+        const btn = document.createElement('button');
+        btn.className = 'category-btn';
+        btn.textContent = trimmedCat;
+        btn.dataset.category = trimmedCat;
+        
+        if (trimmedCat === currentCategory) {
+            btn.classList.add('active');
+        }
+
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentCategory = trimmedCat;
+            filterAndRenderProjects(trimmedCat);
+        });
+        categoryNav.appendChild(btn);
+    });
+}
+
+
+/**
+ * 3. 根據分類過濾並渲染服務卡片 (新增 Price 欄位顯示)
+ * @param {string} category - 要過濾的分類名稱
+ */
+function filterAndRenderProjects(category) {
+    const filteredProjects = allProjects.filter(p => {
+        if (category === 'All') return true;
+        
+        if (!p.Category) return false;
+
+        const projectCategories = p.Category.toString().split(',').map(c => c.trim());
+        return projectCategories.includes(category);
+    });
+
+    projectsGrid.innerHTML = '';
+
+    if (filteredProjects.length === 0) {
+           projectsGrid.innerHTML = `<div style="text-align: center; grid-column: 1 / -1; padding: 50px;">此分類下目前沒有服務項目。</div>`;
+           return;
+    }
+
+    filteredProjects.forEach(project => {
+        const card = document.createElement('div');
+        card.className = 'project-card';
+        card.setAttribute('onclick', `showProjectModal(${JSON.stringify(project).replace(/'/g, "\\'")})`);
+
+        // 顯示項目名稱、價格和簡短說明
+        card.innerHTML = `
+            <h3><i class="ri-heart-pulse-line"></i> ${project.Title}</h3>
+            <div class="price">${project.Price || '請洽詢'}</div>
+            <p>${project.Description ? project.Description.substring(0, 80) + (project.Description.length > 80 ? '...' : '') : '無說明'}</p>
+        `;
+        projectsGrid.appendChild(card);
+    });
+}
+
+
+/**
+ * 4. 顯示服務詳細資訊的 Modal (新增 Price 和 Image 處理)
+ * @param {Object} project - 單個服務的資料物件
+ */
+function showProjectModal(project) {
+    document.getElementById('modal-title').textContent = project.Title;
+    document.getElementById('modal-price').textContent = project.Price || '價格請洽詢';
+    document.getElementById('modal-description').textContent = project.Description || '無詳細說明。';
+    
+    const imagesContainer = document.getElementById('modal-images');
+    imagesContainer.innerHTML = ''; // 清空舊內容
+    
+    const images = [];
+    if (project.Image_1_URL) images.push(project.Image_1_URL);
+    if (project.Image_2_URL) images.push(project.Image_2_URL);
+
+    if (images.length > 0) {
+        images.forEach(url => {
+            if (url) {
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = project.Title + ' 圖片';
+                // 點擊縮圖，開啟 Lightbox
+                img.onclick = () => openLightbox(url); 
+                imagesContainer.appendChild(img);
+            }
+        });
+    } else {
+        // 如果沒有圖片，容器隱藏
+        imagesContainer.innerHTML = ''; 
+    }
+
+    // 顯示 Modal
+    modal.classList.add('open');
+}
+
+
+// =================================================
+// 互動邏輯：Modal & Lightbox
+// =================================================
+
+// 監聽 Modal 關閉事件
+closeBtn.onclick = () => {
+    modal.classList.remove('open');
+};
+
+// 監聽 Lightbox 關閉事件
+lightboxClose.onclick = () => {
+    closeLightbox();
+};
+lightboxModal.onclick = (event) => {
+    // 點擊背景也關閉
+    if (event.target == lightboxModal) {
+        closeLightbox();
+    }
+};
+
+// 點擊 Modal 或 Lightbox 背景關閉
+window.onclick = (event) => {
+    if (event.target == modal) {
+        modal.classList.remove('open');
+    }
+};
+
+
+/**
+ * 開啟 Lightbox 顯示大圖
+ * @param {string} url - 圖片網址
+ */
+function openLightbox(url) {
+    lightboxContent.src = url;
+    lightboxModal.classList.add('open');
+}
+
+/**
+ * 關閉 Lightbox
+ */
+function closeLightbox() {
+    lightboxModal.classList.remove('open');
+    lightboxContent.src = ''; // 清除圖片
+}
+
+// 頁面載入完成後，開始抓取資料
+document.addEventListener('DOMContentLoaded', fetchProjects);
+
+
+// =================================================
+// 溢出檢查邏輯 (維持不變，確保在渲染後呼叫)
+// =================================================
+
+function checkOverflowAndAdjust() {
+    const navContainer = document.querySelector('.category-nav');
+    if (!navContainer) return;
+
+    if (window.innerWidth <= 768) {
+        
+        navContainer.style.flexWrap = 'nowrap'; 
+        
+        const contentWidth = navContainer.scrollWidth;
+        const containerWidth = navContainer.clientWidth;
+
+        navContainer.style.flexWrap = '';
+
+        if (contentWidth > containerWidth) {
+            navContainer.classList.add('is-scrollable');
+        } else {
+            navContainer.classList.remove('is-scrollable');
+        }
+        
+    } else {
+        navContainer.classList.remove('is-scrollable');
+    }
+}
+
+window.addEventListener('resize', debounce(checkOverflowAndAdjust, 100));
+
+function debounce(func, delay) {
+    let timeout;
+    return function() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), delay);
+    };
+}
+    
+</script>
+</html>
