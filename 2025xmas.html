@@ -8,7 +8,7 @@
     <link rel="icon" type="image/png" href="https://rainchord.s3.ap-east-2.amazonaws.com/bell.png">
 <style>
     /* ================================================= */
-    /* CSS 樣式：聖誕溫馨可愛風 (保持並增強) */
+    /* CSS 樣式：聖誕溫馨可愛風 */
     /* ================================================= */
 
     @font-face {
@@ -79,27 +79,24 @@
     
 /* 標題與選擇器 */
 .date-selector-container {
-    /* 修正目標 1: 確保內容水平置中 */
     display: flex;
-    justify-content: center; /* 讓內容水平置中 */
-    align-items: center;     /* 讓內容垂直置中 (關鍵修正點) */
-    
+    justify-content: center; 
+    align-items: center;    
     padding: 10px 0;
     background-color: #fff;    
     margin-bottom: 0px;
 }
 
-/* 新增：調整標籤的樣式，讓它與選單對齊 */
+/* 調整標籤的樣式，讓它與選單對齊 */
 .date-selector-container label {
     font-size: 1.2em;
-    margin-right: 10px; /* 增加標籤和選單之間的間距 */
-    /* 確保文字不會因為基線對齊而偏上 */
+    margin-right: 10px; 
     display: inline-flex;
     align-items: center; 
-    height: 100%; /* 繼承容器高度 */
+    height: 100%; 
 }
     #date-selector {
-		min-width: 150px;
+        min-width: 150px;
         padding: 10px 15px;
         border: 2px solid var(--christmas-red);
         border-radius: 10px;
@@ -108,7 +105,7 @@
         font-size: 1.1rem;
         color: var(--christmas-green);
         cursor: pointer;
-        appearance: none; /* 移除預設樣式 */
+        appearance: none; 
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23376F43'%3E%3Cpath d='M12 16l-6-6h12z'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-position: right 10px center;
@@ -136,7 +133,7 @@
     }
     /* 為跳轉錨點準備 */
     .date-group h2 {
-        scroll-margin-top: 30px; /* 避免標題被 sticky header 遮擋 */
+        scroll-margin-top: 30px; 
     }
 
     .date-title {
@@ -177,6 +174,7 @@
         position: relative;
         overflow: hidden;
         border: 2px solid var(--christmas-red);
+        cursor: pointer; /* 啟用點擊 */
     }
     
     .itinerary-card::before {
@@ -278,13 +276,8 @@
         .itinerary-card { padding: 20px; }
     }
     
-    .itinerary-card {
-        /* ... */
-        cursor: pointer; /* 啟用點擊 */
-    }
-
     /* ================================================= */
-    /* Modal/Popup 樣式 (聖誕風格) */
+    /* Modal/Popup 樣式 (維持不變) */
     /* ================================================= */
     .modal {
         position: fixed;
@@ -294,7 +287,7 @@
         width: 100%;
         height: 100%;
         overflow: auto;
-        background-color: rgba(0, 0, 0, 0.5); /* 更深的背景 */
+        background-color: rgba(0, 0, 0, 0.5); 
         display: none;
         align-items: center;
         justify-content: center;
@@ -311,13 +304,13 @@
         background-color: var(--cream-white);
         margin: 5% auto;
         padding: 40px;
-        border-radius: 30px; /* 更圓潤 */
+        border-radius: 30px; 
         width: 90%;
         max-width: 700px;
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
         position: relative;
-        border: 5px solid var(--christmas-red); /* 紅色邊框 */
-        overflow-y: auto; /* 允許內容滾動 */
+        border: 5px solid var(--christmas-red); 
+        overflow-y: auto; 
         max-height: 90vh;
     }
 
@@ -402,12 +395,13 @@
             min-width: 60px;
         }
     }
-	
-	/* ⭐️ 回到最頂按鈕樣式 */
-    #back-to-top {
+    
+    /* ⭐️ 浮動按鈕群組樣式 */
+    /* 記帳按鈕與回到最頂按鈕的通用樣式 */
+    #account-fab, #back-to-top {
         position: fixed;
         bottom: 20px;
-        right: 20px;
+        right: 20px; /* 先給一個通用位置 */
         background-color: var(--golden-yellow);
         color: var(--dark-text);
         border: 3px solid var(--christmas-red);
@@ -419,19 +413,51 @@
         justify-content: center;
         font-size: 24px;
         cursor: pointer;
+        transition: all 0.2s, transform 0.2s;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        z-index: 100; /* 確保在其他內容之上 */
+        text-decoration: none; /* 移除連結的底線 */
+    }
+
+    /* 回到最頂按鈕的特定位置與顯示邏輯 */
+    #back-to-top {
+        right: 20px; /* 右側第一個 */
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.3s, visibility 0.3s, transform 0.2s;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    #back-to-top.show {
+        opacity: 1;
+        visibility: visible;
     }
     #back-to-top:hover {
         background-color: var(--christmas-red);
         color: white;
         transform: scale(1.05);
     }
-    #back-to-top.show {
-        opacity: 1;
-        visibility: visible;
+    
+    /* 記帳按鈕的特定位置 (與回到最頂按鈕錯開) */
+    #account-fab {
+        right: 80px; /* 距離右側 80px，留出 20px 間隔 + 50px 按鈕寬度 */
+        background-color: var(--christmas-green); /* 使用綠色突出 */
+        color: white;
+        border-color: var(--golden-yellow); /* 邊框使用金色 */
+    }
+
+    #account-fab:hover {
+        background-color: #275631; /* 綠色變深 */
+        color: var(--golden-yellow);
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+        /* 在手機上，將記帳按鈕放到左側，回到最頂按鈕放到右側，避免擁擠 */
+        #account-fab {
+            left: 20px;
+            right: auto;
+        }
+        #back-to-top {
+            right: 20px;
+        }
     }
 </style>
 </head>
@@ -465,16 +491,20 @@
             </div>
         </div>
     </div>
-	
-	<div id="back-to-top" onclick="backToTop()">
+    
+    <a id="account-fab" href="https://script.google.com/macros/s/AKfycbx33GmevnRQDs43jafdv5MMe7hkBO5UXfEN8SpAhM1UDYuWhvmjKa-j11_5hj22iq_DAQ/exec" target="_blank" title="前往記帳">
+        <i class="ri-money-cny-box-line"></i>
+    </a>
+    
+    <div id="back-to-top" onclick="backToTop()" title="回到最頂">
         <i class="ri-arrow-up-line"></i>
     </div>
-	
+    
     <p style="text-align:center; padding-top: 30px; color: #aaa;">Made in ❤️ by Ivy</p>
 
 <script>
 // =================================================
-// JavaScript 邏輯：抓取資料、處理日期、渲染行程卡片 (最終修正版)
+// JavaScript 邏輯 (維持不變)
 // =================================================
 
 // ⚠️ 請確保您的 Apps Script 部署網址是正確的！
@@ -486,9 +516,9 @@ const closeBtn = document.querySelector('#itineraryModal .close-btn');
 const backToTopBtn = document.getElementById('back-to-top');
 
 let allItineraryItems = [];
-let fieldMap = {}; // 欄位標頭與內部鍵的對應 (例如: { NAME: '名稱', START_DATE: '開始日期' })
-let hiddenFields = []; // Apps Script 設定要隱藏的欄位
-let groupedItinerary = {}; // 按日期分組後的資料
+let fieldMap = {}; 
+let hiddenFields = []; 
+let groupedItinerary = {}; 
 
 // 關閉 Modal 事件監聽
 closeBtn.onclick = () => { modal.classList.remove('open'); };
@@ -565,10 +595,10 @@ async function fetchItineraryData() {
         if (result.success === false) {
              statusMessage.classList.add('error');
              statusMessage.innerHTML = `
-                <p><strong>🚨 Apps Script 發生程式錯誤！</strong></p>
-                <p>請檢查 Apps Script 編輯器中的「記錄」。</p>
-                <p><strong>錯誤詳情 (來自 GS):</strong></p>
-                <pre>${result.detail || result.error || '未知的 Apps Script 錯誤。'}</pre>
+                 <p><strong>🚨 Apps Script 發生程式錯誤！</strong></p>
+                 <p>請檢查 Apps Script 編輯器中的「記錄」。</p>
+                 <p><strong>錯誤詳情 (來自 GS):</strong></p>
+                 <pre>${result.detail || result.error || '未知的 Apps Script 錯誤。'}</pre>
              `;
              return;
         }
