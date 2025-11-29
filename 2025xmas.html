@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025聖誕旅行</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="https://rainchord.s3.ap-east-2.amazonaws.com/bell.png">
+<style>
+    /* ================================================= */
+    /* CSS 樣式：聖誕溫馨可愛風 (保持並增強) */
+    /* ================================================= */
+
+    @font-face {
+        font-family: 'JFOpenHuninn';
+        src: url('https://ymdd-image-tw.s3.ap-east-2.amazonaws.com/font/jf-openhuninn-2.1.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    :root {
+        --christmas-red: #D93F3C; 
+        --christmas-green: #376F43; 
+        --cream-white: #FFFBED; 
+        --golden-yellow: #FFD700; 
+        --dark-text: #4a4a4a; 
+        --shadow: 0 10px 30px rgba(217, 63, 60, 0.2); 
+        --border-radius: 20px; 
+    }
+
+    body {
+        font-family: 'JFOpenHuninn', '微軟正黑體', 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        color: var(--dark-text);
+        min-height: 100vh;
+        background-color: var(--cream-white); 
+        background-image: url('https://rainchord.s3.ap-east-2.amazonaws.com/snowflake.jpg');
+        background-size: 200px;
+        background-repeat: repeat;
+        background-attachment: fixed;
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.75); 
+        z-index: -1; 
+    }
+
+    .container {
+        max-width: 1000px;
+        width: 90%;
+        margin: 0 auto;
+        padding: 15px 0;
+    }
+
+    header {
+        background-color: rgba(255, 255, 255, 0.95); 
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 10px 0; 
+        border-bottom: 5px solid var(--christmas-red);
+    }
+
+    h1 {
+        color: var(--christmas-green);
+        text-align: center;
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-shadow: 1px 1px 0 var(--golden-yellow);
+    }
+    
+/* 標題與選擇器 */
+.date-selector-container {
+    /* 修正目標 1: 確保內容水平置中 */
+    display: flex;
+    justify-content: center; /* 讓內容水平置中 */
+    align-items: center;     /* 讓內容垂直置中 (關鍵修正點) */
+    
+    padding: 10px 0;
+    background-color: #fff;    
+    margin-bottom: 0px;
+}
+
+/* 新增：調整標籤的樣式，讓它與選單對齊 */
+.date-selector-container label {
+    font-size: 1.2em;
+    margin-right: 10px; /* 增加標籤和選單之間的間距 */
+    /* 確保文字不會因為基線對齊而偏上 */
+    display: inline-flex;
+    align-items: center; 
+    height: 100%; /* 繼承容器高度 */
+}
+    #date-selector {
+		min-width: 150px;
+        padding: 10px 15px;
+        border: 2px solid var(--christmas-red);
+        border-radius: 10px;
+        background-color: white;
+        font-family: 'JFOpenHuninn', sans-serif;
+        font-size: 1.1rem;
+        color: var(--christmas-green);
+        cursor: pointer;
+        appearance: none; /* 移除預設樣式 */
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23376F43'%3E%3Cpath d='M12 16l-6-6h12z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 16px;
+    }
+    #date-selector:focus {
+        border-color: var(--golden-yellow);
+        outline: none;
+    }
+
+
+    /* 行程日期分組列表 */
+    #itinerary-list {
+        display: flex;
+        flex-direction: column;
+        gap: 30px; 
+        padding: 20px 0;
+    }
+
+    .date-group {
+        border-left: 8px solid var(--christmas-red);
+        padding-left: 20px;
+        position: relative;
+        margin-bottom: 20px;
+    }
+    /* 為跳轉錨點準備 */
+    .date-group h2 {
+        scroll-margin-top: 100px; /* 避免標題被 sticky header 遮擋 */
+    }
+
+    .date-title {
+        color: var(--christmas-green);
+        font-size: 2rem;
+        font-weight: 700;
+        margin-top: 0;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+    .date-title i {
+        color: var(--golden-yellow);
+        margin-right: 10px;
+        font-size: 1.2em;
+        animation: twinkle 1s infinite alternate;
+    }
+
+    @keyframes twinkle {
+      from { transform: scale(1); opacity: 0.8; }
+      to { transform: scale(1.1); opacity: 1; }
+    }
+
+    .itinerary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 25px; 
+    }
+
+    .itinerary-card {
+        background: white;
+        border-radius: var(--border-radius); 
+        padding: 25px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex; 
+        flex-direction: column; 
+        position: relative;
+        overflow: hidden;
+        border: 2px solid var(--christmas-red);
+    }
+    
+    .itinerary-card::before {
+        content: '🎉';
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background-color: var(--christmas-red);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 0 0 0 15px;
+        font-size: 1.2rem;
+        z-index: 10;
+        transform: rotate(10deg);
+        box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+
+    .itinerary-card:hover {
+        transform: translateY(-5px); 
+        box-shadow: 0 12px 30px rgba(217, 63, 60, 0.3); 
+        border-color: var(--christmas-green);
+    }
+
+    .item-name {
+        color: var(--christmas-green);
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 1.5rem;
+        font-weight: 700;
+        border-bottom: 2px dashed var(--christmas-green);
+        padding-bottom: 5px;
+    }
+
+    .item-detail {
+        font-size: 1.05rem;
+        color: var(--dark-text);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+    }
+    .item-detail i {
+        margin-right: 8px;
+        color: var(--christmas-red);
+        font-size: 1.2em;
+    }
+
+    .map-link-btn {
+        background-color: var(--golden-yellow);
+        color: var(--dark-text);
+        padding: 10px 15px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.2s ease;
+        text-align: center;
+        text-decoration: none;
+        margin-top: 15px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 100%;
+    }
+
+    .map-link-btn:hover {
+        background-color: var(--christmas-red);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .map-link-btn i {
+        margin-right: 8px;
+        color: inherit; 
+    }
+
+    .remark-box {
+        margin-top: 15px;
+        padding: 10px;
+        border: 2px solid var(--christmas-red);
+        border-radius: 10px;
+        background-color: rgba(255, 240, 240, 0.8);
+        color: var(--christmas-red);
+        font-weight: bold;
+        font-size: 1rem;
+        display: flex;
+        align-items: flex-start;
+    }
+    .remark-box i {
+        margin-right: 8px;
+        font-size: 1.4em;
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+        h1 { font-size: 2rem; }
+        .date-title { font-size: 1.7rem; }
+        .date-group { border-left-width: 5px; padding-left: 15px; }
+        .itinerary-grid { grid-template-columns: 1fr; }
+        .itinerary-card { padding: 20px; }
+    }
+    
+    .itinerary-card {
+        /* ... */
+        cursor: pointer; /* 啟用點擊 */
+    }
+
+    /* ================================================= */
+    /* Modal/Popup 樣式 (聖誕風格) */
+    /* ================================================= */
+    .modal {
+        position: fixed;
+        z-index: 200;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5); /* 更深的背景 */
+        display: none;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal.open {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-content {
+        background-color: var(--cream-white);
+        margin: 5% auto;
+        padding: 40px;
+        border-radius: 30px; /* 更圓潤 */
+        width: 90%;
+        max-width: 700px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        position: relative;
+        border: 5px solid var(--christmas-red); /* 紅色邊框 */
+        overflow-y: auto; /* 允許內容滾動 */
+        max-height: 90vh;
+    }
+
+    .modal.open .modal-content {
+        animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .close-btn { 
+        position: absolute;
+        top: 15px;
+        right: 25px;
+        color: var(--christmas-red);
+        font-size: 35px;
+        font-weight: bold;
+        cursor: pointer; 
+        line-height: 1;
+        transition: color 0.2s;
+    }
+    .close-btn:hover, .close-btn:focus { 
+        color: var(--christmas-green); 
+    }
+
+    .modal-body h2 { 
+        color: var(--christmas-green); 
+        margin-top: 0; 
+        margin-bottom: 20px; 
+        font-size: 2.2rem;
+        border-bottom: 3px dashed var(--golden-yellow);
+        padding-bottom: 10px;
+    }
+    
+    .modal-detail-item {
+        margin-bottom: 15px;
+        padding: 8px 0;
+        font-size: 1.1rem;
+        color: var(--dark-text);
+        display: flex;
+        align-items: flex-start;
+    }
+    .modal-detail-item strong {
+        color: var(--christmas-red);
+        font-weight: bold;
+        min-width: 80px;
+        margin-right: 10px;
+        flex-shrink: 0;
+    }
+    .modal-detail-item i {
+        margin-right: 8px;
+        font-size: 1.2em;
+        color: var(--christmas-red);
+    }
+    
+    .modal-link-btn {
+        background-color: var(--golden-yellow);
+        color: var(--dark-text);
+        padding: 12px 20px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: bold;
+        display: inline-flex;
+        align-items: center;
+        margin-top: 15px;
+        transition: background-color 0.2s;
+    }
+    .modal-link-btn:hover {
+        background-color: var(--christmas-red);
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .modal-content {
+            padding: 30px 20px;
+        }
+        .modal-body h2 {
+            font-size: 1.8rem;
+        }
+        .modal-detail-item strong {
+            min-width: 60px;
+        }
+    }
+	
+	/* ⭐️ 回到最頂按鈕樣式 */
+    #back-to-top {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: var(--golden-yellow);
+        color: var(--dark-text);
+        border: 3px solid var(--christmas-red);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s, transform 0.2s;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    #back-to-top:hover {
+        background-color: var(--christmas-red);
+        color: white;
+        transform: scale(1.05);
+    }
+    #back-to-top.show {
+        opacity: 1;
+        visibility: visible;
+    }
+</style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <h1 id="page-title"><i class="ri-tree-line"></i> 2025聖誕旅行 <i class="ri-gift-line"></i></h1>
+            <div class="date-selector-container">
+                <label for="date-selector">今天是：</label>
+                <select id="date-selector" onchange="scrollToDate(this.value)">
+                    <option value="">選擇日期...</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="status-message">載入中，請稍候...</div>
+        <div id="itinerary-list">
+        </div>
+    </div>
+
+    <div id="itineraryModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div class="modal-body">
+                <h2 id="modal-title"></h2>
+                <div id="modal-details"></div>
+                <div id="modal-links"></div>
+            </div>
+        </div>
+    </div>
+	
+	<div id="back-to-top" onclick="backToTop()">
+        <i class="ri-arrow-up-line"></i>
+    </div>
+	
+    <p style="text-align:center; padding-top: 30px; color: #aaa;">Made in ❤️ by Ivy</p>
+
+<script>
+// =================================================
+// JavaScript 邏輯：抓取資料、處理日期、渲染行程卡片 (最終修正版)
+// =================================================
+
+// ⚠️ 請確保您的 Apps Script 部署網址是正確的！
+const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbw4mje3Mq7p1U0DHF7PtxG17Yq4fAkMAgoZTQBUMKR3dlC4slFGYLdjFoHNMeKHXWzhGg/exec';
+const itineraryList = document.getElementById('itinerary-list');
+const statusMessage = document.getElementById('status-message');
+const modal = document.getElementById('itineraryModal');
+const closeBtn = document.querySelector('#itineraryModal .close-btn');
+const backToTopBtn = document.getElementById('back-to-top');
+
+let allItineraryItems = [];
+let fieldMap = {}; // 欄位標頭與內部鍵的對應 (例如: { NAME: '名稱', START_DATE: '開始日期' })
+let hiddenFields = []; // Apps Script 設定要隱藏的欄位
+let groupedItinerary = {}; // 按日期分組後的資料
+
+// 關閉 Modal 事件監聽
+closeBtn.onclick = () => { modal.classList.remove('open'); };
+window.onclick = (event) => {
+    if (event.target == modal) {
+        modal.classList.remove('open');
+    }
+};
+
+// 滾動事件監聽器，控制回到最頂按鈕的顯示
+window.onscroll = function() {
+    if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+        backToTopBtn.classList.add('show');
+    } else {
+        backToTopBtn.classList.remove('show');
+    }
+};
+
+/**
+ * 輔助函式：安全地解析純日期字串 (例如 YYYY/MM/DD) 為 Date 物件
+ * @param {string} dateString - YYYY/MM/DD 或 YYYY-MM-DD
+ * @returns {Date|null} 本地日期物件
+ */
+function parseLocalDay(dateString) {
+    if (!dateString) return null;
+    // 允許 YYYY/MM/DD 或 YYYY-MM-DD 格式
+    const parts = dateString.match(/(\d{4})[/-](\d{1,2})[/-](\d{1,2})/); 
+    if (parts) {
+        // 使用 yyyy, mm-1, dd 構造 Date 物件，它會將時間設置為當地的 00:00:00
+        const year = parseInt(parts[1], 10);
+        const month = parseInt(parts[2], 10) - 1; // 月份是 0-based
+        const day = parseInt(parts[3], 10);
+        return new Date(year, month, day);
+    }
+    return null;
+}
+
+/**
+ * 輔助函式：將 Date 物件格式化為 YYYY/MM/DD 格式的字串 (用於顯示和 Key)
+ * @param {Date} date - Date 物件
+ * @returns {string} YYYY/MM/DD
+ */
+function formatKeyDate(date) {
+    if (date.toString() === 'Invalid Date') return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}/${month}/${day}`;
+}
+
+
+/**
+ * 1. 抓取 Google Apps Script 提供的 JSON 資料 (增強診斷和錯誤處理)
+ */
+async function fetchItineraryData() {
+    statusMessage.style.display = 'block';
+    statusMessage.classList.remove('error');
+    statusMessage.textContent = '正在呼叫聖誕老公公的行程表，請稍候...';
+    
+    try {
+        const response = await fetch(GAS_API_URL);
+        
+        // 確保 HTTP 狀態碼是 OK (200-299)
+        if (!response.ok) {
+             statusMessage.classList.add('error');
+             statusMessage.innerHTML = `<p><strong>🚨 網路請求失敗！</strong> 狀態碼: ${response.status}</p>
+             <p>請檢查您的 GAS_API_URL 是否正確，並確認 Apps Script 部署版本。</p>`;
+             return;
+        }
+
+        const result = await response.json();
+        
+        // 如果 Apps Script 成功回傳，但回傳的 JSON 裡有錯誤旗標 (這是 GS 程式碼的設計)
+        if (result.success === false) {
+             statusMessage.classList.add('error');
+             statusMessage.innerHTML = `
+                <p><strong>🚨 Apps Script 發生程式錯誤！</strong></p>
+                <p>請檢查 Apps Script 編輯器中的「記錄」。</p>
+                <p><strong>錯誤詳情 (來自 GS):</strong></p>
+                <pre>${result.detail || result.error || '未知的 Apps Script 錯誤。'}</pre>
+             `;
+             return;
+        }
+
+        if (!result.data || !Array.isArray(result.data)) {
+            // 檢查資料是否為空或格式錯誤
+            statusMessage.classList.add('error');
+            statusMessage.innerHTML = `<p><strong>🚨 資料結構錯誤！</strong> API 回傳的資料 (data 欄位) 不是陣列或為空。</p>
+            <p><strong>Settings:</strong> ${JSON.stringify(result.settings)}</p>`;
+            return;
+        }
+        
+        // --- 成功抓取與處理 ---
+        fieldMap = result.settings.fieldMap || {};
+        hiddenFields = result.settings.hiddenFields || [];
+        allItineraryItems = result.data;
+        
+        if (allItineraryItems.length === 0) {
+            statusMessage.textContent = '成功連接，但試算表中沒有有效的行程資料。請確認您的「行程規劃」工作表。';
+            return;
+        }
+
+        // 隱藏狀態訊息，表示成功
+        statusMessage.style.display = 'none';
+        
+        // 處理日期分組
+        groupedItinerary = processItineraryData(allItineraryItems, fieldMap);
+        
+        // 檢查日期解析是否成功
+        if (Object.keys(groupedItinerary).length === 0) {
+             statusMessage.style.display = 'block';
+             statusMessage.classList.add('error');
+             statusMessage.innerHTML = `<p><strong>🚨 日期解析失敗！</strong></p>
+             <p>雖然抓到 ${allItineraryItems.length} 筆資料，但無法從「${fieldMap.START_DATE || '未設定'}」欄位解析出有效日期。</p>
+             <p>請確認試算表中日期欄位的格式為 <code>YYYY/MM/DD</code> 或 <code>YYYY-MM-DD</code>。</p>`;
+             return;
+        }
+
+        renderItinerary(groupedItinerary);
+        
+        // 渲染日期選單
+        const sortedDates = Object.keys(groupedItinerary).sort();
+        const dateSelectorContainer = document.querySelector('.date-selector-container');
+        if (sortedDates.length > 1) {
+             renderDateSelector(sortedDates);
+             dateSelectorContainer.style.display = 'flex'; // 顯示選單
+        } else {
+             dateSelectorContainer.style.display = 'none'; // 隱藏選單
+        }
+
+    } catch (error) {
+        console.error('抓取資料失敗:', error);
+        statusMessage.classList.add('error');
+        // 捕捉網路或 JSON 解析失敗
+        statusMessage.innerHTML = `<p><strong>致命錯誤：</strong>瀏覽器端無法連接或解析 JSON。</p>
+        <p>請檢查 <code>GAS_API_URL</code> 是否正確，並確認 Apps Script 部署為「任何人」。</p>
+        <p><strong>詳情:</strong> ${error.message}</p>`;
+    }
+}
+
+
+/**
+ * 2. 處理行程資料，將日期範圍展開並按日期分組 (修正日期解析)
+ */
+function processItineraryData(items, keys) {
+    const groupedByDate = {}; 
+
+    items.forEach(item => {
+        // 確保 startDateStr 和 endDateStr 已經是 Apps Script 傳來的純字串
+        const startDateStr = item[keys.START_DATE] || '';
+        const endDateStr = item[keys.END_DATE] || startDateStr; 
+        
+        if (!startDateStr) return; 
+
+        // 使用新的 parseLocalDay 函式安全地創建 Date 物件
+        const startDate = parseLocalDay(startDateStr);
+        const endDate = parseLocalDay(endDateStr);
+        
+        if (!startDate || !endDate || startDate > endDate) {
+             console.warn('日期範圍錯誤或格式不正確，跳過:', item, startDateStr, endDateStr);
+             return;
+        }
+
+        let currentDate = startDate;
+        
+        // 迴圈遍歷日期範圍
+        while (currentDate <= endDate) {
+            // 使用 formatKeyDate 確保日期鍵的格式一致性 (YYYY/MM/DD)
+            const dateKey = formatKeyDate(currentDate); 
+            
+            if (!groupedByDate[dateKey]) {
+                groupedByDate[dateKey] = [];
+            }
+            
+            // 將行程項目添加到當天
+            groupedByDate[dateKey].push(item);
+
+            // 推進到下一天 (確保不會產生時區問題)
+            const nextDay = new Date(currentDate);
+            nextDay.setDate(currentDate.getDate() + 1);
+            currentDate = nextDay;
+        }
+    });
+    return groupedByDate;
+}
+
+/**
+ * 3. 渲染日期選單 (使用 YYYY/MM/DD 格式作為 Value)
+ * @param {Array<string>} sortedDates - 排序後的日期列表 (YYYY/MM/DD 格式)
+ */
+function renderDateSelector(sortedDates) {
+    const selector = document.getElementById('date-selector');
+    selector.innerHTML = '<option value="">選擇日期...</option>'; 
+    
+    sortedDates.forEach(date => {
+        const option = document.createElement('option');
+        option.value = date; // value 使用 YYYY/MM/DD 
+        option.textContent = date;
+        selector.appendChild(option);
+    });
+}
+
+/**
+ * 4. 滾動到指定日期
+ * @param {string} dateKey - 要跳轉的日期 (YYYY/MM/DD)
+ */
+function scrollToDate(dateKey) {
+    if (!dateKey) return;
+    // 找到對應的日期標題 h2 元素 (ID 中 / 被替換為 -)
+    const targetElement = document.getElementById(`date-${dateKey.replace(/\//g, '-')}`); 
+    if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+/**
+ * 5. 渲染行程列表
+ */
+function renderItinerary(groupedData) {
+    itineraryList.innerHTML = '';
+    
+    // 確保日期鍵的格式為 YYYY/MM/DD 並排序
+    const sortedDates = Object.keys(groupedData).sort();
+
+    sortedDates.forEach(dateKey => {
+        const items = groupedData[dateKey];
+        if (items.length === 0) return;
+
+        const dateGroup = document.createElement('div');
+        dateGroup.className = 'date-group';
+
+        const title = document.createElement('h2');
+        title.className = 'date-title';
+        // 設置 ID 時將 / 替換為 -，確保 ID 有效
+        title.id = `date-${dateKey.replace(/\//g, '-')}`; 
+        title.innerHTML = `<i class="ri-star-fill"></i> ${dateKey}`;
+        dateGroup.appendChild(title);
+
+        const grid = document.createElement('div');
+        grid.className = 'itinerary-grid';
+
+        // 依照時間排序，確保同一天的行程是按順序顯示
+        items.sort((a, b) => {
+            const timeA = a[fieldMap.TIME] || '';
+            const timeB = b[fieldMap.TIME] || '';
+            return timeA.localeCompare(timeB);
+        });
+
+        items.forEach((item) => {
+            const card = createItineraryCard(item);
+            grid.appendChild(card);
+        });
+
+        dateGroup.appendChild(grid);
+        itineraryList.appendChild(dateGroup);
+    });
+}
+
+/**
+ * 6. 建立單個行程卡片的 HTML 結構
+ */
+function createItineraryCard(item) {
+    const card = document.createElement('div');
+    card.className = 'itinerary-card';
+    
+    // 設置 onclick，傳遞 JSON 字串，以便在 Modal 中顯示完整內容
+    // 替換 ' 為 \' 以避免 HTML 屬性錯誤
+    const itemJsonString = JSON.stringify(item).replace(/'/g, "\\'"); 
+    card.setAttribute('onclick', `showItineraryModal('${itemJsonString}')`);
+
+    const isHidden = (key) => hiddenFields.includes(fieldMap[key]);
+
+    // 1. 名稱
+    const name = document.createElement('h3');
+    name.className = 'item-name';
+    name.textContent = item[fieldMap.NAME] || '未命名行程';
+    card.appendChild(name);
+
+    // 2. 時間
+    const timeValue = item[fieldMap.TIME];
+    if (timeValue && timeValue.trim() !== '' && !isHidden('TIME')) {
+        const timeDetail = document.createElement('p');
+        timeDetail.className = 'item-detail';
+        timeDetail.innerHTML = `<i class="ri-time-line"></i> ${timeValue}`;
+        card.appendChild(timeDetail);
+    }
+    
+    // 3. 景點名稱 
+    const locationNameValue = item[fieldMap.LOCATION_NAME];
+    if (locationNameValue && locationNameValue.trim() !== '' && !isHidden('LOCATION_NAME')) {
+        const locationDetail = document.createElement('p');
+        locationDetail.className = 'item-detail';
+        locationDetail.innerHTML = `<i class="ri-map-pin-line"></i> 景點：${locationNameValue}`;
+        card.appendChild(locationDetail);
+    }
+
+    // 4. 備註 (只顯示前 50 字)
+    const remarkValue = item[fieldMap.REMARK];
+    if (remarkValue && remarkValue.trim() !== '' && !isHidden('REMARK')) {
+        const snippet = remarkValue.length > 50 ? remarkValue.substring(0, 50) + '...' : remarkValue;
+        const remarkBox = document.createElement('div');
+        remarkBox.className = 'remark-box';
+        remarkBox.innerHTML = `<i class="ri-error-warning-line"></i> 備註：${snippet}`;
+        card.appendChild(remarkBox);
+    }
+    
+    return card;
+}
+
+/**
+ * 7. 顯示行程詳細資訊的 Modal
+ */
+function showItineraryModal(itemJsonString) {
+    try {
+        // 解析 JSON 字串 (將 escaped single quotes 轉回來)
+        const item = JSON.parse(itemJsonString.replace(/\\'/g, "'")); 
+        
+        document.getElementById('modal-title').textContent = item[fieldMap.NAME] || '行程詳情';
+        
+        const detailsContainer = document.getElementById('modal-details');
+        const linksContainer = document.getElementById('modal-links');
+        detailsContainer.innerHTML = ''; 
+        linksContainer.innerHTML = '';
+
+        const detailItems = [
+            { key: 'START_DATE', label: '開始日期', icon: 'ri-calendar-line' },
+            { key: 'END_DATE', label: '結束日期', icon: 'ri-calendar-check-line' },
+            { key: 'TIME', label: '時間', icon: 'ri-time-line' },
+            { key: 'LOCATION_NAME', label: '景點名稱', icon: 'ri-map-pin-line' },
+            { key: 'REMARK', label: '完整備註', icon: 'ri-chat-1-line' },
+        ];
+        
+        // 渲染詳細資訊
+        detailItems.forEach(({ key, label, icon }) => {
+            const fieldHeader = fieldMap[key];
+            const value = item[fieldHeader];
+
+            if (fieldHeader && value && value.trim() !== '' && !hiddenFields.includes(fieldHeader)) {
+                const detailItem = document.createElement('div');
+                detailItem.className = 'modal-detail-item';
+                detailItem.innerHTML = `
+                    <i class="${icon}"></i>
+                    <strong>${label}:</strong> 
+                    <span>${value.replace(/\n/g, '<br>')}</span>
+                `;
+                detailsContainer.appendChild(detailItem);
+            }
+        });
+        
+        // 渲染地圖連結按鈕
+        const mapLinkValue = item[fieldMap.MAP_LINK];
+        const mapLinkHeader = fieldMap.MAP_LINK;
+
+        if (mapLinkValue && mapLinkValue.trim() !== '' && !hiddenFields.includes(mapLinkHeader)) {
+            const mapLinkBtn = document.createElement('a');
+            mapLinkBtn.href = mapLinkValue;
+            mapLinkBtn.target = '_blank';
+            mapLinkBtn.className = 'modal-link-btn';
+            mapLinkBtn.innerHTML = '<i class="ri-pin-distance-line"></i> 導航去景點';
+            linksContainer.appendChild(mapLinkBtn);
+        }
+        
+        modal.classList.add('open');
+
+    } catch (error) {
+        console.error('解析行程資料失敗:', error);
+        alert('無法顯示詳細資訊，請檢查資料格式。');
+    }
+}
+
+/**
+ * 8. 回到頁面頂部
+ */
+function backToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+// 頁面載入完成後，開始抓取資料
+document.addEventListener('DOMContentLoaded', fetchItineraryData);
+</script>
+</body>
+</html>
