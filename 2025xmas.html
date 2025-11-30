@@ -250,23 +250,25 @@
         color: inherit; 
     }
 
-    .remark-box {
-        margin-top: 15px;
-        padding: 10px;
-        border: 2px solid var(--christmas-red);
-        border-radius: 10px;
-        background-color: rgba(255, 240, 240, 0.8);
-        color: var(--christmas-red);
-        font-weight: bold;
-        font-size: 1rem;
-        display: flex;
-        align-items: flex-start;
-    }
-    .remark-box i {
-        margin-right: 8px;
-        font-size: 1.4em;
-        flex-shrink: 0;
-    }
+	.remark-box {
+		margin-top: 15px;
+		padding: 10px;
+		border: 2px solid var(--christmas-red);
+		border-radius: 10px;
+		background-color: rgba(255, 240, 240, 0.8);
+		color: var(--christmas-red);
+		font-weight: bold;
+		font-size: 1rem;
+		display: block; /* ⭐️ 修正：改為 block 讓內容自然換行 */
+		/* 移除 align-items: flex-start; */
+	}
+	.remark-box i {
+		margin-right: 8px;
+		font-size: 1.4em;
+		/* 讓 i 標籤變成行內區塊，才能和後面的文字在同一行，但又不會被 flex 影響 */
+		display: inline-block; /* ⭐️ 修正：讓 i 和文字在同一行 */
+		flex-shrink: 0;
+	}
 
     @media (max-width: 768px) {
         h1 { font-size: 2rem; }
@@ -504,10 +506,11 @@
 
 <script>
 // =================================================
-// JavaScript 邏輯 (維持不變)
+// JavaScript 邏輯：行程表功能 (已修復換行符號問題 & 新增備註連結解析)
 // =================================================
 
 // ⚠️ 請確保您的 Apps Script 部署網址是正確的！
+// 您可以替換為您的 Web App URL
 const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbw4mje3Mq7p1U0DHF7PtxG17Yq4fAkMAgoZTQBUMKR3dlC4slFGYLdjFoHNMeKHXWzhGg/exec';
 const itineraryList = document.getElementById('itinerary-list');
 const statusMessage = document.getElementById('status-message');
@@ -570,6 +573,30 @@ function formatKeyDate(date) {
 }
 
 
+// =================================================
+// ⭐️ 新增功能：連結轉換輔助函式
+// =================================================
+
+/**
+ * 將文字中的 URL (http/https 開頭) 轉換為 <a href="...">...</a> 超連結。
+ * @param {string} text - 包含潛在連結的文字。
+ * @returns {string} 包含 HTML 超連結標籤的文字。
+ */
+function linkifyText(text) {
+    if (!text) return '';
+    
+    // 匹配 http:// 或 https:// 開頭的 URL。
+    // 這個正則表達式足夠安全，並且可以處理大部分情況。
+    const urlPattern = /(\b(https?):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    
+    // 使用 replace 方法將匹配到的 URL 替換成完整的 <a> 標籤
+    return text.replace(urlPattern, function(url) {
+        // 確保連結在新視窗開啟，並設置 rel="noopener noreferrer" 提高安全性
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+    });
+}
+
+
 /**
  * 1. 抓取 Google Apps Script 提供的 JSON 資料 (增強診斷和錯誤處理)
  */
@@ -595,10 +622,10 @@ async function fetchItineraryData() {
         if (result.success === false) {
              statusMessage.classList.add('error');
              statusMessage.innerHTML = `
-                 <p><strong>🚨 Apps Script 發生程式錯誤！</strong></p>
-                 <p>請檢查 Apps Script 編輯器中的「記錄」。</p>
-                 <p><strong>錯誤詳情 (來自 GS):</strong></p>
-                 <pre>${result.detail || result.error || '未知的 Apps Script 錯誤。'}</pre>
+                <p><strong>🚨 Apps Script 發生程式錯誤！</strong></p>
+                <p>請檢查 Apps Script 編輯器中的「記錄」。</p>
+                <p><strong>錯誤詳情 (來自 GS):</strong></p>
+                <pre>${result.detail || result.error || '未知的 Apps Script 錯誤。'}</pre>
              `;
              return;
         }
@@ -735,12 +762,12 @@ function scrollToDate(dateKey) {
 }
 
 /**
- * 5. 渲染行程列表
+ * 5. 渲染行程列表 (已移除時間排序，改依賴試算表原始順序)
  */
 function renderItinerary(groupedData) {
     itineraryList.innerHTML = '';
     
-    // 確保日期鍵的格式為 YYYY/MM/DD 並排序
+    // 確保日期鍵的格式為 YYYY/MM/DD 並排序 (日期排序保留，因為這是分組依據)
     const sortedDates = Object.keys(groupedData).sort();
 
     sortedDates.forEach(dateKey => {
@@ -760,12 +787,7 @@ function renderItinerary(groupedData) {
         const grid = document.createElement('div');
         grid.className = 'itinerary-grid';
 
-        // 依照時間排序，確保同一天的行程是按順序顯示
-        items.sort((a, b) => {
-            const timeA = a[fieldMap.TIME] || '';
-            const timeB = b[fieldMap.TIME] || '';
-            return timeA.localeCompare(timeB);
-        });
+        // 這裡不再進行時間排序，直接使用 items 的原始順序 (即試算表行順序)
 
         items.forEach((item) => {
             const card = createItineraryCard(item);
@@ -784,10 +806,9 @@ function createItineraryCard(item) {
     const card = document.createElement('div');
     card.className = 'itinerary-card';
     
-    // 設置 onclick，傳遞 JSON 字串，以便在 Modal 中顯示完整內容
-    // 替換 ' 為 \' 以避免 HTML 屬性錯誤
+    // ⭐️ 關鍵修復：使用 JSON.stringify 和 replace 來安全地傳遞物件資料
     const itemJsonString = JSON.stringify(item).replace(/'/g, "\\'"); 
-    card.setAttribute('onclick', `showItineraryModal('${itemJsonString}')`);
+    card.setAttribute('onclick', `showItineraryModal(${itemJsonString})`);
 
     const isHidden = (key) => hiddenFields.includes(fieldMap[key]);
 
@@ -815,27 +836,42 @@ function createItineraryCard(item) {
         card.appendChild(locationDetail);
     }
 
-    // 4. 備註 (只顯示前 50 字)
-    const remarkValue = item[fieldMap.REMARK];
-    if (remarkValue && remarkValue.trim() !== '' && !isHidden('REMARK')) {
-        const snippet = remarkValue.length > 50 ? remarkValue.substring(0, 50) + '...' : remarkValue;
-        const remarkBox = document.createElement('div');
-        remarkBox.className = 'remark-box';
-        remarkBox.innerHTML = `<i class="ri-error-warning-line"></i> 備註：${snippet}`;
-        card.appendChild(remarkBox);
-    }
+// ...
+// 4. 備註 (只顯示前 50 字)
+const remarkValue = item[fieldMap.REMARK];
+if (remarkValue && remarkValue.trim() !== '' && !isHidden('REMARK')) {
     
+    // ⭐️ 修正：移除 .replace(/\n/g, ' ')。
+    // 1. 處理換行：將 \n 轉換為 <br>
+    let snippetWithBreaks = remarkValue.replace(/\n/g, '<br>');
+    
+    // 2. 處理超連結
+    let snippetWithLinks = linkifyText(snippetWithBreaks);
+    
+    // 3. 處理截斷 (注意：此時可能在 <br> 或 <a> 標籤中間截斷，但為了顯示多行，這是必要的取捨)
+    // 為了保證標籤不會被截斷，我們只對純文字進行截斷，但在這裡我們主要目的是確保換行和連結，
+    // 所以我們只截斷文本的長度，並假設純文字內容不會太長。
+    // 這裡我們只截取前 50 個字元的原始文字，然後再進行 HTML 處理
+    const rawSnippet = remarkValue.length > 50 ? remarkValue.substring(0, 50) + '...' : remarkValue;
+    
+    // 最終顯示的內容，需要包含 <br> 和 <a> 標籤
+    const finalDisplayHtml = linkifyText(rawSnippet).replace(/\n/g, '<br>');
+    
+    const remarkBox = document.createElement('div');
+    remarkBox.className = 'remark-box';
+    // 使用 innerHTML 來渲染換行和超連結
+    remarkBox.innerHTML = `<i class="ri-error-warning-line"></i> 備註：${finalDisplayHtml}`;
+    card.appendChild(remarkBox);
+}
+
     return card;
 }
 
 /**
  * 7. 顯示行程詳細資訊的 Modal
  */
-function showItineraryModal(itemJsonString) {
+function showItineraryModal(item) {
     try {
-        // 解析 JSON 字串 (將 escaped single quotes 轉回來)
-        const item = JSON.parse(itemJsonString.replace(/\\'/g, "'")); 
-        
         document.getElementById('modal-title').textContent = item[fieldMap.NAME] || '行程詳情';
         
         const detailsContainer = document.getElementById('modal-details');
@@ -854,16 +890,31 @@ function showItineraryModal(itemJsonString) {
         // 渲染詳細資訊
         detailItems.forEach(({ key, label, icon }) => {
             const fieldHeader = fieldMap[key];
-            const value = item[fieldHeader];
+            const value = item[fieldHeader]; 
 
             if (fieldHeader && value && value.trim() !== '' && !hiddenFields.includes(fieldHeader)) {
                 const detailItem = document.createElement('div');
                 detailItem.className = 'modal-detail-item';
+                
+                let displayValue = value;
+                
+                // 處理備註欄位：
+                if (key === 'REMARK') {
+                    // 1. 將純文字連結轉換為可點擊的超連結
+                    displayValue = linkifyText(displayValue); 
+                    // 2. 將換行符號 (\n) 替換為 HTML 的換行標籤 <br>
+                    displayValue = displayValue.replace(/\n/g, '<br>'); 
+                } else {
+                    // 非備註欄位，只需要處理換行
+                    displayValue = displayValue.replace(/\n/g, '<br>');
+                }
+
                 detailItem.innerHTML = `
                     <i class="${icon}"></i>
                     <strong>${label}:</strong> 
-                    <span>${value.replace(/\n/g, '<br>')}</span>
+                    <span>${displayValue}</span>
                 `;
+                // 為了讓備註中的超連結能夠被渲染，這裡必須使用 innerHTML
                 detailsContainer.appendChild(detailItem);
             }
         });
@@ -884,8 +935,8 @@ function showItineraryModal(itemJsonString) {
         modal.classList.add('open');
 
     } catch (error) {
-        console.error('解析行程資料失敗:', error);
-        alert('無法顯示詳細資訊，請檢查資料格式。');
+        console.error('顯示行程資料失敗:', error);
+        alert('無法顯示詳細資訊，請檢查 Apps Script 的資料輸出或欄位對應。');
     }
 }
 
