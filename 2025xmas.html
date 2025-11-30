@@ -261,6 +261,9 @@
 		font-size: 1rem;
 		display: block; /* ⭐️ 修正：改為 block 讓內容自然換行 */
 		/* 移除 align-items: flex-start; */
+		/* ⭐️ 新增：強制在長單字/URL 中間斷行 */
+		word-wrap: break-word;
+		word-break: break-all;
 	}
 	.remark-box i {
 		margin-right: 8px;
@@ -368,6 +371,17 @@
         font-size: 1.2em;
         color: var(--christmas-red);
     }
+	
+	/* 修正 2: 彈窗內備註詳情 */
+	/* 這裡可能需要新增一個針對備註內容的樣式 */
+
+	.modal-detail-item span {
+		/* 這裡 target 彈窗內顯示的值 (span 元素) */
+		
+		/* ⭐️ 新增：強制在長單字/URL 中間斷行 */
+		word-wrap: break-word;
+		word-break: break-all; 
+	}
     
     .modal-link-btn {
         background-color: var(--golden-yellow);
@@ -873,32 +887,22 @@ function createItineraryCard(item) {
 
 // ...
 // 4. 備註 (只顯示前 50 字)
-const remarkValue = item[fieldMap.REMARK];
-if (remarkValue && remarkValue.trim() !== '' && !isHidden('REMARK')) {
+    const remarkValue = item[fieldMap.REMARK];
+    if (remarkValue && remarkValue.trim() !== '' && !isHidden('REMARK')) {
+        
+        // 1. 先處理原始文字的截斷 (截斷點不完美，但能控制大致長度)
+        const rawSnippet = remarkValue.length > 50 ? remarkValue.substring(0, 50) + '...' : remarkValue;
+        
+        // 2. 處理 <br> 和 <a> 標籤
+        const finalDisplayHtml = linkifyText(rawSnippet).replace(/\n/g, '<br>');
+        
+        const remarkBox = document.createElement('div');
+        remarkBox.className = 'remark-box';
+        // 使用 innerHTML 來渲染換行和超連結
+        remarkBox.innerHTML = `<i class="ri-error-warning-line"></i> 備註：${finalDisplayHtml}`;
+        card.appendChild(remarkBox);
+    }
     
-    // ⭐️ 修正：移除 .replace(/\n/g, ' ')。
-    // 1. 處理換行：將 \n 轉換為 <br>
-    let snippetWithBreaks = remarkValue.replace(/\n/g, '<br>');
-    
-    // 2. 處理超連結
-    let snippetWithLinks = linkifyText(snippetWithBreaks);
-    
-    // 3. 處理截斷 (注意：此時可能在 <br> 或 <a> 標籤中間截斷，但為了顯示多行，這是必要的取捨)
-    // 為了保證標籤不會被截斷，我們只對純文字進行截斷，但在這裡我們主要目的是確保換行和連結，
-    // 所以我們只截斷文本的長度，並假設純文字內容不會太長。
-    // 這裡我們只截取前 50 個字元的原始文字，然後再進行 HTML 處理
-    const rawSnippet = remarkValue.length > 50 ? remarkValue.substring(0, 50) + '...' : remarkValue;
-    
-    // 最終顯示的內容，需要包含 <br> 和 <a> 標籤
-    const finalDisplayHtml = linkifyText(rawSnippet).replace(/\n/g, '<br>');
-    
-    const remarkBox = document.createElement('div');
-    remarkBox.className = 'remark-box';
-    // 使用 innerHTML 來渲染換行和超連結
-    remarkBox.innerHTML = `<i class="ri-error-warning-line"></i> 備註：${finalDisplayHtml}`;
-    card.appendChild(remarkBox);
-}
-
     return card;
 }
 
