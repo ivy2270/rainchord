@@ -849,7 +849,7 @@ function renderItinerary(groupedData) {
 }
 
 /**
- * 6. 建立單個行程卡片的 HTML 結構
+ * 6. 建立單個行程卡片的 HTML 結構 (已修正：卡片備註不轉換連結，僅在彈窗轉換)
  */
 function createItineraryCard(item) {
     const card = document.createElement('div');
@@ -861,13 +861,13 @@ function createItineraryCard(item) {
 
     const isHidden = (key) => hiddenFields.includes(fieldMap[key]);
 
-    // 1. 名稱
+    // 1. 名稱 (不變)
     const name = document.createElement('h3');
     name.className = 'item-name';
     name.textContent = item[fieldMap.NAME] || '未命名行程';
     card.appendChild(name);
 
-    // 2. 時間
+    // 2. 時間 (不變)
     const timeValue = item[fieldMap.TIME];
     if (timeValue && timeValue.trim() !== '' && !isHidden('TIME')) {
         const timeDetail = document.createElement('p');
@@ -876,7 +876,7 @@ function createItineraryCard(item) {
         card.appendChild(timeDetail);
     }
     
-    // 3. 景點名稱 
+    // 3. 景點名稱 (不變)
     const locationNameValue = item[fieldMap.LOCATION_NAME];
     if (locationNameValue && locationNameValue.trim() !== '' && !isHidden('LOCATION_NAME')) {
         const locationDetail = document.createElement('p');
@@ -885,20 +885,27 @@ function createItineraryCard(item) {
         card.appendChild(locationDetail);
     }
 
-// ...
-// 4. 備註 (只顯示前 50 字)
+    // 4. 備註 (只顯示前 50 字 - 僅純文字處理)
     const remarkValue = item[fieldMap.REMARK];
+    const MAX_LENGTH = 50;
+    
     if (remarkValue && remarkValue.trim() !== '' && !isHidden('REMARK')) {
+        let textToDisplay = remarkValue;
+        let ellipsis = '';
         
-        // 1. 先處理原始文字的截斷 (截斷點不完美，但能控制大致長度)
-        const rawSnippet = remarkValue.length > 50 ? remarkValue.substring(0, 50) + '...' : remarkValue;
+        // 1. 處理純文字截斷
+        if (remarkValue.length > MAX_LENGTH) {
+             textToDisplay = remarkValue.substring(0, MAX_LENGTH);
+             ellipsis = '...';
+        }
         
-        // 2. 處理 <br> 和 <a> 標籤
-        const finalDisplayHtml = linkifyText(rawSnippet).replace(/\n/g, '<br>');
+        // 2. 處理換行 (必須將 \n 轉換為 <br> 才能在卡片上顯示多行)
+        // ⚠️ 關鍵：這裡我們不再呼叫 linkifyText()
+        const finalDisplayHtml = textToDisplay.replace(/\n/g, '<br>') + ellipsis;
         
         const remarkBox = document.createElement('div');
         remarkBox.className = 'remark-box';
-        // 使用 innerHTML 來渲染換行和超連結
+        // 使用 innerHTML 來渲染換行
         remarkBox.innerHTML = `<i class="ri-error-warning-line"></i> 備註：${finalDisplayHtml}`;
         card.appendChild(remarkBox);
     }
