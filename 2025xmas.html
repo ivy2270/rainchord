@@ -398,69 +398,98 @@
         }
     }
     
-    /* ⭐️ 浮動按鈕群組樣式 */
-    /* 記帳按鈕與回到最頂按鈕的通用樣式 */
-    #account-fab, #back-to-top {
-        position: fixed;
-        bottom: 20px;
-        right: 20px; /* 先給一個通用位置 */
-        background-color: var(--golden-yellow);
-        color: var(--dark-text);
-        border: 3px solid var(--christmas-red);
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        cursor: pointer;
-        transition: all 0.2s, transform 0.2s;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        z-index: 100; /* 確保在其他內容之上 */
-        text-decoration: none; /* 移除連結的底線 */
-    }
+/* ⭐️ 浮動按鈕群組樣式 */
+/* 記帳、回到最頂、許願池按鈕的通用樣式 (已包含 #wish-fab) */
+#account-fab, #back-to-top, #wish-fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px; /* 通用設置，將被特定 ID 覆寫 */
+    
+    /* 通用視覺樣式 (從 #back-to-top 繼承大部分樣式) */
+    background-color: var(--golden-yellow); 
+    color: var(--dark-text);
+    border: 3px solid var(--christmas-red);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 100; /* 確保在其他內容之上 */
+    text-decoration: none; /* 移除連結的底線 */
+}
 
-    /* 回到最頂按鈕的特定位置與顯示邏輯 */
-    #back-to-top {
-        right: 20px; /* 右側第一個 */
-        opacity: 0;
-        visibility: hidden;
-    }
-    #back-to-top.show {
-        opacity: 1;
-        visibility: visible;
-    }
-    #back-to-top:hover {
-        background-color: var(--christmas-red);
-        color: white;
-        transform: scale(1.05);
+/* 回到最頂按鈕的特定位置與顯示邏輯 (右側第一個) */
+#back-to-top {
+    right: 20px; /* 右側第一個 */
+    opacity: 0;
+    visibility: hidden;
+}
+#back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+}
+#back-to-top:hover {
+    background-color: var(--christmas-red);
+    color: white;
+    transform: scale(1.05);
+}
+
+/* 記帳按鈕的特定樣式與位置 (右側第二個) */
+#account-fab {
+    right: 80px; /* 距離右側 80px */
+    background-color: var(--christmas-green); /* 使用綠色突出 */
+    color: white;
+    border-color: var(--golden-yellow); /* 邊框使用金色 */
+    /* 覆寫通用樣式的 right 屬性 */
+}
+
+#account-fab:hover {
+    background-color: #275631; /* 綠色變深 */
+    color: var(--golden-yellow);
+    transform: scale(1.05);
+}
+
+/* ⭐️ 許願池按鈕的特定樣式與位置 (右側第三個) */
+#wish-fab {
+    right: 140px; /* ⭐️ 距離右側 140px (20+50+20+50+20) */
+    background-color: var(--christmas-red); /* 建議使用紅色 */
+    color: var(--cream-white);
+    border-color: var(--golden-yellow);
+    /* 覆寫通用樣式的 right 屬性 */
+}
+
+#wish-fab:hover {
+    background-color: #b83232; /* 紅色變深 */
+    color: white;
+    transform: scale(1.05);
+}
+
+
+@media (max-width: 768px) {
+    /* 在手機上，將三個按鈕分散 */
+    
+    /* 記帳按鈕 (左側第一個) */
+    #account-fab {
+        left: 20px;
+        right: auto;
     }
     
-    /* 記帳按鈕的特定位置 (與回到最頂按鈕錯開) */
-    #account-fab {
-        right: 80px; /* 距離右側 80px，留出 20px 間隔 + 50px 按鈕寬度 */
-        background-color: var(--christmas-green); /* 使用綠色突出 */
-        color: white;
-        border-color: var(--golden-yellow); /* 邊框使用金色 */
+    /* 許願池按鈕 (左側第二個) */
+    #wish-fab {
+        left: 80px; /* ⭐️ 新增手機位置 */
+        right: auto;
     }
-
-    #account-fab:hover {
-        background-color: #275631; /* 綠色變深 */
-        color: var(--golden-yellow);
-        transform: scale(1.05);
+    
+    /* 回到最頂按鈕 (右側第一個) */
+    #back-to-top {
+        right: 20px;
     }
-
-    @media (max-width: 768px) {
-        /* 在手機上，將記帳按鈕放到左側，回到最頂按鈕放到右側，避免擁擠 */
-        #account-fab {
-            left: 20px;
-            right: auto;
-        }
-        #back-to-top {
-            right: 20px;
-        }
-    }
+}
 </style>
 </head>
 <body>
@@ -498,6 +527,12 @@
         <i class="ri-money-cny-box-line"></i>
     </a>
     
+	<a id="wish-fab" 
+   href="https://script.google.com/macros/s/AKfycbwxI0XAboz25-1u34TuGQ4HE5Ft8PrDDMWJe1Wn5sW052TVKBOTqmOsbCCl5WGIgoM7SA/exec" 
+   target="_blank" 
+   title="景點許願池">
+    <i class="ri-star-line"></i> 
+	</a>
     <div id="back-to-top" onclick="backToTop()" title="回到最頂">
         <i class="ri-arrow-up-line"></i>
     </div>
