@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📦 庫存管理系統</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe.min.css">
+  <style>
+    :root { --primary: #4a90e2; --bg: #f8fafc; --accent: #e2e8f0; --success: #27ae60; }
+    
+    html, body { 
+      margin: 0; padding: 15px; background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overflow: visible !important; height: auto !important;
+      touch-action: pan-y;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; }
+    
+    .drop-zone { 
+      border: 2px dashed #cbd5e1; border-radius: 16px; background: #fff; 
+      padding: 30px; text-align: center; cursor: pointer; transition: 0.3s; 
+      margin-bottom: 20px; touch-action: pan-y;
+    }
+    .drop-zone:hover { border-color: var(--primary); }
+    .drop-zone.dragover { border-color: var(--primary); background: #f0f7ff; }
+    
+    #fileInput { display: none !important; visibility: hidden; width: 0; height: 0; }
+
+    /* 密碼輸入框樣式 */
+    #adminPassword {
+      width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px;
+      margin-bottom: 20px; box-sizing: border-box; font-size: 14px; outline: none;
+    }
+    #adminPassword:focus { border-color: var(--primary); }
+
+    .preview-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-bottom: 20px; }
+    .preview-item { position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 1/1; border: 1px solid var(--accent); background: #fff; }
+    .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .preview-item.uploading::after { content: ""; position: absolute; inset: 0; background: rgba(255,255,255,0.7); z-index: 5; }
+    .preview-item.success::after { 
+      content: "✓"; position: absolute; inset: 0; background: rgba(39, 174, 96, 0.85); 
+      color: white; display: flex; align-items: center; justify-content: center; 
+      font-size: 30px; font-weight: bold; z-index: 6; 
+    }
+
+    .loader { 
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+      border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); 
+      border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; 
+      z-index: 10; display: none; 
+    }
+    .preview-item.uploading .loader { display: block; }
+    @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+    @media (max-width: 480px) { .gallery { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+
+    .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; touch-action: pan-y; }
+    .img-box { width: 100%; aspect-ratio: 1/1; cursor: zoom-in; overflow: hidden; position: relative; display: block; }
+    .img-box img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; display: block; }
+    .card:hover .img-box img { transform: scale(1.05); }
+    
+    .card-actions { padding: 8px; border-top: 1px solid #f1f5f9; }
+    .copy-btn { width: 100%; border: none; background: #f1f5f9; color: #475569; padding: 6px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500; }
+
+    .load-more-wrap { text-align: center; margin: 30px 0; }
+    .load-more-btn { background: #fff; color: var(--primary); border: 1px solid var(--primary); padding: 10px 25px; border-radius: 20px; cursor: pointer; font-weight: 600; }
+
+    #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 50px; display: none; z-index: 1000; font-size: 14px; }
+    button.main-btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: 600; cursor: pointer; margin-bottom: 20px; }
+    .remove-btn { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; z-index: 11; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>📦 庫存管理系統</h2>
+  <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+    <div style="font-size: 32px; color: #94a3b8; margin-bottom: 8px;">+</div>
+    <div style="color: #64748b; font-size: 15px;">點擊或拖曳圖片 (上限5張)</div>
+    <input type="file" id="fileInput" accept="image/*" multiple onchange="handleFiles(this.files)">
+  </div>
+
+  <div class="preview-list" id="previewList"></div>
+
+  <div id="uploadActions" style="display:none;">
+    <input type="password" id="adminPassword" placeholder="輸入管理員密碼以進行上傳">
+    <button class="main-btn" id="uploadBtn" onclick="startUpload()">確認上傳至 S3</button>
+  </div>
+  
+  <div class="gallery" id="gallery"></div>
+  <div class="load-more-wrap" id="loadMoreWrap" style="display:none;">
+    <button class="load-more-btn" onclick="renderNextBatch()">顯示更多圖片</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+  import PhotoSwipeLightbox from 'https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe-lightbox.esm.min.js';
+  const lightbox = new PhotoSwipeLightbox({
+    gallery: '#gallery',
+    children: '.pswp-link',
+    pswpModule: () => import('https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.2/photoswipe.esm.min.js')
+  });
+
+  // 完全保留你提供的比例過濾器
+  lightbox.addFilter('itemData', (itemData) => {
+    const img = new Image(); 
+    img.src = itemData.src;
+    if (img.complete) { 
+      itemData.width = img.width; 
+      itemData.height = img.height; 
+    } else { 
+      itemData.width = 1200; 
+      itemData.height = 800; 
+      img.onload = () => { 
+        itemData.width = img.width; 
+        itemData.height = img.height; 
+        if (lightbox.pswp) lightbox.pswp.currSlide.updateSize(true); 
+      }; 
+    }
+    return itemData;
+  });
+  lightbox.init();
+  window.lightbox = lightbox;
+</script>
+
+<script>
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbxubaqeJd3yRPWFnzyDW06_SRTyUIFDKstSPnYtNoda0Pu0HTftaxukdzLNKZPlpdqxYw/exec'; 
+
+  let allData = [];
+  let currentIndex = 0;
+  const BATCH_SIZE = 12;
+  let selectedFiles = [];
+  
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.innerText = msg; toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 2000);
+  }
+
+  function handleFiles(files) {
+    for (let file of files) {
+      if (selectedFiles.length >= 5) break;
+      selectedFiles.push({ file: file });
+    }
+    renderPreviews();
+  }
+
+  function renderPreviews() {
+    const list = document.getElementById('previewList');
+    list.innerHTML = '';
+    selectedFiles.forEach((item, index) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const div = document.createElement('div');
+        div.id = 'prev-item-' + index;
+        div.className = `preview-item`;
+        div.innerHTML = `<img src="${e.target.result}"><div class="loader"></div><button class="remove-btn" onclick="removeFile(${index})">×</button>`;
+        list.appendChild(div);
+      };
+      reader.readAsDataURL(item.file);
+    });
+    // 顯示或隱藏密碼區與按鈕
+    document.getElementById('uploadActions').style.display = selectedFiles.length > 0 ? 'block' : 'none';
+  }
+
+  function removeFile(index) { selectedFiles.splice(index, 1); renderPreviews(); }
+
+  const toBase64 = f => new Promise(r => { 
+    const rd = new FileReader(); 
+    rd.onload = () => r(rd.result.split(',')[1]); 
+    rd.readAsDataURL(f); 
+  });
+
+  async function startUpload() {
+    const pwd = document.getElementById('adminPassword').value;
+    if (!pwd) {
+      showToast('⚠️ 請輸入密碼');
+      return;
+    }
+
+    const btn = document.getElementById('uploadBtn');
+    btn.disabled = true;
+    btn.innerText = '正在校驗密碼...';
+
+    // --- 密碼預先驗證流程 ---
+    try {
+      const checkResponse = await fetch(`${GAS_URL}?check=${encodeURIComponent(pwd)}`);
+      const checkResult = await checkResponse.text();
+      
+      if (checkResult !== "VALID") {
+        showToast('❌ 密碼錯誤，拒絕上傳');
+        btn.disabled = false;
+        btn.innerText = '確認上傳至 S3';
+        return; // 直接中斷
+      }
+    } catch (err) {
+      console.error("驗證過程出錯:", err);
+    }
+
+    // 驗證成功，執行上傳
+    btn.innerText = '密碼正確，處理上傳...';
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const itemEl = document.getElementById('prev-item-' + i);
+      if (itemEl) itemEl.classList.add('uploading');
+      
+      const item = selectedFiles[i];
+      const base64 = await toBase64(item.file);
+      
+      try {
+        await fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            password: pwd,
+            fileName: item.file.name,
+            fileType: item.file.type,
+            base64: base64
+          })
+        });
+        if (itemEl) {
+          itemEl.classList.remove('uploading');
+          itemEl.classList.add('success');
+        }
+      } catch (e) {
+        console.error("上傳失敗:", e);
+      }
+    }
+
+    showToast('✅ 上傳請求已送出');
+    setTimeout(() => {
+      selectedFiles = [];
+      document.getElementById('previewList').innerHTML = '';
+      document.getElementById('uploadActions').style.display = 'none';
+      document.getElementById('adminPassword').value = '';
+      btn.disabled = false;
+      btn.innerText = '確認上傳至 S3';
+      loadData();
+    }, 1500);
+  }
+
+  async function loadData() {
+    try {
+      const response = await fetch(GAS_URL);
+      const data = await response.json();
+      allData = data; 
+      currentIndex = 0;
+      document.getElementById('gallery').innerHTML = '';
+      renderNextBatch();
+    } catch (e) {
+      console.error("讀取失敗:", e);
+    }
+  }
+
+  function renderNextBatch() {
+    const gallery = document.getElementById('gallery');
+    const nextBatch = allData.slice(currentIndex, currentIndex + BATCH_SIZE);
+    if (nextBatch.length === 0) return;
+
+    const html = nextBatch.map(row => `
+      <div class="card">
+        <a href="${row[2]}" class="pswp-link img-box" target="_blank">
+          <img src="${row[2]}" loading="lazy">
+        </a>
+        <div class="card-actions">
+          <button class="copy-btn" onclick="copyUrl('${row[2]}', this)">複製網址</button>
+        </div>
+      </div>
+    `).join('');
+
+    gallery.insertAdjacentHTML('beforeend', html);
+    currentIndex += BATCH_SIZE;
+    document.getElementById('loadMoreWrap').style.display = currentIndex < allData.length ? 'block' : 'none';
+    
+    if (window.lightbox) window.lightbox.refresh();
+  }
+
+  window.copyUrl = (url, btn) => {
+    navigator.clipboard.writeText(url).then(() => {
+      const old = btn.innerText; btn.innerText = '已複製';
+      showToast('網址已複製');
+      setTimeout(() => btn.innerText = old, 1500);
+    });
+  }
+
+  window.onload = loadData;
+
+  const dz = document.getElementById('dropZone');
+  dz.ondragover = (e) => { e.preventDefault(); dz.classList.add('dragover'); };
+  dz.ondragleave = () => dz.classList.remove('dragover');
+  dz.ondrop = (e) => { 
+    e.preventDefault(); 
+    dz.classList.remove('dragover'); 
+    handleFiles(e.dataTransfer.files); 
+  };
+</script>
+</body>
+</html>
